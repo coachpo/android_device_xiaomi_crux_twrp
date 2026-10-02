@@ -13,15 +13,18 @@ The kernel is **not** stored in this repository. TWRP's inline kernel build
 | `BOARD_KERNEL_IMAGE_NAME` | `Image-dtb` |
 | `BOARD_KERNEL_SEPARATED_DTBO` | `true` |
 
-The source is provided by `manifests/crux-twrp.xml`:
+The manifest follows branch `thirteen-plus` and the build script warns when the
+checkout differs from the expected revision; it does not pin the commit:
 
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="github"
-         revision="b5ef11095c5389f937514d59da39c35cd244d971" />
+         revision="thirteen-plus" clone-depth="1" />
 ```
 
-That commit is the PE13 kernel used by the current workspace:
+The expected revision is `b5ef11095c5389f937514d59da39c35cd244d971` (see
+`scripts/build-twrp.sh`); the branch can move. That revision is the PE13 kernel
+used by the current workspace:
 
 ```text
 Linux version 4.14.357-openela-Marisa-20260104-ksunext
@@ -97,8 +100,10 @@ above.
 
 ## Updating the kernel
 
-1. Update the pinned revision in `manifests/crux-twrp.xml` (and the README
-   table) to the new `coachpo/kernel_xiaomi_crux` commit or branch.
+1. Choose the kernel branch and expected revision deliberately. Update
+   `manifests/crux-twrp.xml`, `scripts/build-twrp.sh`'s expected SHA and the
+   README table together; the manifest tracks a branch and the warning is not
+   an enforcement check.
 2. If the PE13 device tree also consumes the same kernel commit, keep both in
    sync (the PE13 manifest pins `b5ef1109` as well).
 3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild.

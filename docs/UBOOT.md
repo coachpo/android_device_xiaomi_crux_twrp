@@ -10,20 +10,28 @@ Every Android/recovery entry is started by the U-Boot boot menu. There is no
 direct ABL -> recovery path in use, and the `recovery` partition is not the
 normal boot source for TWRP on this setup.
 
-## Current boot menu contract
+The last hardware-verified menu boots MIUI and the legacy TWRP 3.3.1 FIT. The
+TWRP 3.7.1 adaptation in this repository has not been built or integrated; see
+[`STATUS.md`](STATUS.md) and the workspace
+[`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
+
+## Verified menu and candidate layout
 
 Source: `u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env`.
+
+The hardware-verified `ub-crux-bootmenu.img` and cache payload contain only
+the MIUI and TWRP FITs below. The source checkout now also has uncommitted PE
+menu entries and an uncommitted `boot/bootm.c` change to reserve the arm64
+kernel's full BSS footprint. These changes and their older candidate image have
+not been rebuilt together, flashed or device-verified.
 
 ```text
 cache partition: UFS LUN0, 4096-byte blocks, starts at LBA 0x30000
   0x00000000  miui-menu.itb      MIUI            (stock kernel + official DT)
   0x04000000  twrp-menu.itb      TWRP            (proven TWRP 3.3.1 + live DT)
-  0x08000000  pe-recovery.itb    PE recovery
-  0x0c000000  pe-rom.itb         PE system
 
-boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 0x3486; \
-          setenv fdt_high 0x84900000; setenv initrd_high 0x84200000; \
-          bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; bootm go
+# Legacy, hardware-tested 3.3.1 entry; a newly built FIT needs a new block count:
+boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 0x3486; setenv fdt_high 0x84900000; setenv initrd_high 0x84200000; bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; bootm go
 ```
 
 Address contract used by the FIT:
@@ -36,15 +44,22 @@ Address contract used by the FIT:
 | `fdt_high` | `0x84900000` |
 | `initrd_high` | `0x84200000` |
 
-`scsi read 0xC0000000 0x34000 <blocks>` reads the TWRP FIT from cache
-LBA `0x34000` (64 MiB into the cache payload); `<blocks>` is the FIT size in
-4096-byte blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes).
+`scsi read 0xC0000000 0x34000 <blocks>` reads a TWRP FIT from cache LBA
+`0x34000` (64 MiB into the payload); `<blocks>` is the FIT size in 4096-byte
+blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes).
+
+The PE payload currently is not a valid four-entry boot layout: `make-cache-payload.py`
+uses `pe-recovery-live.itb` as a fallback when `pe-rom.itb` is absent. That
+diagnostic FIT is 61,761,340 bytes (about `0x3b00` blocks), while the candidate
+`boot_pe_rom` command reads only `0x3100` blocks. The candidate ROM read would
+truncate the FIT. Do not use or describe the PE ROM entry as bootable until the
+system FIT exists and its slot, size, checksums and read length agree.
 
 ## What this repository produces
 
 `scripts/make-fit.sh` packages the TWRP build into `out/fit-twrp/twrp-crux.itb`:
 
-- kernel: the raw `Image` built from `kernel/xiaomi/crux` (no appended DTBs),
+- kernel: intended to be the raw `Image` built from `kernel/xiaomi/crux` (no appended DTBs),
   **gzip-compressed in the FIT** and decompressed by U-Boot (`CONFIG_GZIP=y`)
   so the image stays inside the 64 MiB TWRP cache slot;
 - ramdisk: `ramdisk-recovery.img` (gzip) with `compression = "none"` — the
@@ -54,12 +69,15 @@ LBA `0x34000` (64 MiB into the cache payload); `<blocks>` is the FIT size in
 
 The script prints the exact replacement for `boot_twrp`, recomputed for the
 new FIT size, plus SHA-256 and block count. If the FIT exceeds 64 MiB it warns
-and the cache-payload layout has to be renegotiated.
+and the cache-payload layout has to be renegotiated. The TWRP build has not yet
+been run, so inspect the selected kernel artifact: `BoardConfig.mk` names
+`Image-dtb`, while this FIT path expects a raw `Image` plus the separate live
+DT. Do not infer the packaged kernel form before the first build.
 
 ## Ownership boundary
 
-The U-Boot boot menu and the cache payload image are maintained by another
-session. This repository must **not** edit:
+U-Boot source and cache-payload integration belong to `u-boot-port/`. This
+repository produces a FIT and handoff material only; it must **not** edit:
 
 - `u-boot-port/src/u-boot-next/**` (including `board/qualcomm/xiaomi-crux.env`),
 - `out/crux-bootmenu-2026-10-02/cache-payload.img` or the device.
@@ -70,7 +88,8 @@ When the image is ready for hardware, hand over:
 2. the generated `boot_twrp=...` line (the block count changes),
 3. optionally a payload copy produced by `scripts/insert-cache-payload.py`.
 
-The boot-menu session then updates the environment and writes the payload.
+The U-Boot integration work then updates the environment and, when explicitly
+authorized, writes the payload.
 
 ## Live device tree
 

@@ -8,10 +8,10 @@
         cp manifests/crux-twrp.xml .repo/local_manifests/
         repo sync
 
-    The kernel project is pinned to the PE13 kernel used by the current
-    workspace (coachpo/kernel_xiaomi_crux @ b5ef1109, Linux 4.14.357-openela
-    "Marisa"). TWRP builds it from source through
-    vendor/twrp/build/tasks/kernel.mk.
+    The kernel project follows the thirteen-plus branch. The expected PE13
+    source revision is b5ef11095c5389f937514d59da39c35cd244d971 (Linux
+    4.14.357-openela "Marisa"); scripts/build-twrp.sh only warns on mismatch.
+    TWRP builds the kernel from source through vendor/twrp/build/tasks/kernel.mk.
 -->
 <manifest>
     <project name="coachpo/android_device_xiaomi_crux_twrp"

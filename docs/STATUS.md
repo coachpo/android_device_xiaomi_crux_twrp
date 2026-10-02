@@ -2,14 +2,16 @@
 
 As of 2026-10-02 this repository contains a complete **code-level** TWRP
 adaptation for crux on the TWRP 12.1 baseline. No build has been run from this
-repository yet and no image has been flashed to a device.
+repository yet; no artifact from this adaptation has been flashed or tested on
+device. The phone has separately booted the older TWRP 3.3.1 FIT from the
+verified U-Boot menu; see `../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`.
 
 ## Component state
 
 | Component | State | Notes |
 |---|---|---|
 | TWRP baseline | configured | `twrp-12.1` (3.7.1_12); `lunch twrp_crux-eng` |
-| Kernel source integration | configured | inline build of `kernel/xiaomi/crux` (`crux_defconfig`), pinned `b5ef1109`; PE13 4.14.357 |
+| Kernel source integration | configured | inline build of `kernel/xiaomi/crux` (`crux_defconfig`), branch `thirteen-plus`; expected revision `b5ef1109` (the build script warns on mismatch but does not fail); PE13 4.14.357 |
 | Device kernel capabilities | verified (config) | binderfs, dm-default-key, dm-crypt/verity, FBE v2+ICE, EROFS, UFS, DRM, touch — see `KERNEL.md` |
 | Partition / fstab layout | configured | static non-A/B; exact PE13 userdata flags (`fileencryption=ice`, metadata keydirectory, reservedsize) |
 | `twrp.flags` | configured | full crux partition list converted from the proven 3.3.1 image to TWRP 12.1 syntax |
@@ -18,8 +20,8 @@ repository yet and no image has been flashed to a device.
 | Crypto / decryption | configured, unverified | twrp-common `qcom_decrypt` + `qcom_decrypt_fbe`, stock keymaster 4.0 / gatekeeper 1.0 / qseecomd blobs, FBE v2 props |
 | Haptics | configured, unverified | AW8697 firmware in ramdisk + vibrator HAL binaries |
 | U-Boot FIT packaging | configured | `scripts/make-fit.sh`, gzip kernel + live DT, recomputes `boot_twrp` blocks |
-| Build | **not run** | needs an x86_64 Linux host with ~150 GB free |
-| Recovery on device | **not run** | requires the boot-menu session for the cache payload |
+| Build | **not run** | needs an x86_64 Linux userspace; ~150 GB free is a planning estimate, check space before syncing |
+| Recovery on device | **not run for this adaptation** | the verified menu still boots the separate legacy TWRP 3.3.1 FIT |
 | Decryption on PE13 data | **not verified** | main functional risk |
 
 ## Open risks / questions
@@ -57,6 +59,6 @@ repository yet and no image has been flashed to a device.
    and fix any device-tree build errors.
 2. Measure the FIT and confirm the 64 MiB slot, or hand the new offsets to the
    boot-menu session.
-3. Request device time and run `docs/DEVICE-TEST.md` (read-only first).
+3. After a build and FIT handoff, obtain explicit authorization for the needed device operations and follow `docs/DEVICE-TEST.md` by phase.
 4. Iterate on decryption and display/touch if needed.
 5. Only later: evaluate `twrp-14.1` (`3.7.1_14`).

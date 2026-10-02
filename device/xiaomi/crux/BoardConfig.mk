@@ -64,6 +64,17 @@ TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_SOURCE := kernel/xiaomi/crux
 TARGET_KERNEL_CONFIG := crux_defconfig
 TARGET_KERNEL_CLANG_COMPILE := true
+# The crux kernel is built with the LLVM tools, matching the PE13 build.
+# With the AOSP GCC prebuilts' GNU ld the vmlinux link fails with
+# "Cannot change output format whilst linking AArch64 binaries".
+TARGET_KERNEL_CLANG_BIN := $(shell pwd)/prebuilts/clang/host/linux-x86/clang-r416183b1/bin
+TARGET_KERNEL_ADDITIONAL_FLAGS += \
+    LD=$(TARGET_KERNEL_CLANG_BIN)/ld.lld \
+    AR=$(TARGET_KERNEL_CLANG_BIN)/llvm-ar \
+    NM=$(TARGET_KERNEL_CLANG_BIN)/llvm-nm \
+    OBJCOPY=$(TARGET_KERNEL_CLANG_BIN)/llvm-objcopy \
+    OBJDUMP=$(TARGET_KERNEL_CLANG_BIN)/llvm-objdump \
+    STRIP=$(TARGET_KERNEL_CLANG_BIN)/llvm-strip
 # TWRP-specific kernel options (console/pstore/...) can be added with a fragment
 # placed in kernel/xiaomi/crux/arch/arm64/configs/ and selected here:
 # TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig

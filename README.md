@@ -7,13 +7,16 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` @ `b5ef11095c5389f937514d59da39c35cd244d971` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`), built **from source** |
+| Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `b5ef11095c5389f937514d59da39c35cd244d971` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
 | Status | **Code-level adaptation complete; not yet compiled or device-verified** (see `docs/STATUS.md`) |
 
-The U-Boot boot menu is maintained by another session. This repository never
-changes U-Boot, the cache payload image or the device; it produces the FIT and
-the exact `boot_twrp` environment line to hand over. See `docs/UBOOT.md`.
+The verified device menu currently boots the older TWRP 3.3.1 from cache; the
+new 3.7.1 adaptation in this repository has not been built or device-tested.
+U-Boot source and payload ownership is in `u-boot-port/`. This repository
+produces the FIT and its exact `boot_twrp` command for integration; it does not
+change the U-Boot checkout, flash cache or operate the device. See
+`docs/UBOOT.md` and the [latest recorded device handoff](../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
 
 ## Repository layout
 
@@ -34,8 +37,9 @@ docs/STATUS.md               what is done, what is open
 
 ## Requirements
 
-- x86_64 Linux build host (the workspace uses the OrbStack `cruxbuild` VM) with
-  ~150 GB free for the TWRP 12.1 tree plus `out/`.
+- x86_64 Linux userspace (the workspace's build VM is `cruxbuild`). About
+  150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`; this
+  TWRP build has not yet been run, so check available space before syncing.
 - `repo` (Android repo launcher).
 - U-Boot `mkimage` for packaging the FIT (the crux U-Boot tree's
   `tools/mkimage`, or any U-Boot `mkimage` on `PATH`).
@@ -56,7 +60,7 @@ scripts/build-twrp.sh "$HOME/twrp-12.1"
 scripts/make-fit.sh --out-dir "$HOME/twrp-12.1/out/target/product/crux"
 #    output: out/fit-twrp/twrp-crux.itb + a new boot_twrp command line
 
-# 4. (later, owned by the boot-menu session) prepare a cache payload copy
+# 4. Prepare a cache payload copy for review; this does not write the device
 scripts/insert-cache-payload.py --fit out/fit-twrp/twrp-crux.itb \
     --base ../out/crux-bootmenu-2026-10-02/cache-payload.img
 ```
@@ -71,11 +75,11 @@ TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 
 ## Why twrp-12.1 and not a newer branch
 
-The previous research in this workspace concluded:
+As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
+([released 2024-02-21](https://twrp.me/site/update/2024/02/21/3.7.1-released.html)). This checkout uses its `twrp-12.1` build branch:
 
-- The latest **released** TWRP is **3.7.1** (2024-02-21), built on the
-  `android-12.1` branch (version `3.7.1_12`); it supports Android 12.1 and up,
-  which covers the PE13 (Android 13) userdata layout.
+- TWRP 3.7.1's Android 12.1 release line is version `3.7.1_12` and targets
+  Android 12.1 and up, covering the PE13 (Android 13) userdata layout.
 - `android-13`, `android-14` and `android-14.1` exist in the TWRP repository
   but have **no official release** (`android-14.1` still identifies as
   `3.7.1_14`). They are a later, separate evaluation.
