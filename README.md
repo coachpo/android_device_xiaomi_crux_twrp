@@ -7,12 +7,13 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `b5ef11095c5389f937514d59da39c35cd244d971` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
+| Kernel | `kernel/xiaomi/crux` pinned to `b5ef11095c5389f937514d59da39c35cd244d971` (branch `thirteen-plus`) — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). `scripts/build-twrp.sh` aborts if the checkout differs (override: `ALLOW_KERNEL_REVISION_MISMATCH=1`). |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
 | Status | **Code-level adaptation complete; host build verified 2026-10-02; not device-verified** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`) |
 
 The last hardware-verified menu boots the older TWRP 3.3.1 from cache; the
-new 3.7.1 adaptation in this repository has not been built or device-tested.
+new 3.7.1 adaptation in this repository was host-built on 2026-10-02 but has
+not been integrated into the U-Boot menu or device-tested.
 U-Boot source and payload ownership is in `u-boot-port/`. This repository
 produces the FIT and its exact `boot_twrp` command for integration; it does not
 change the U-Boot checkout, flash cache or operate the device. See

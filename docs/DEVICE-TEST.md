@@ -1,6 +1,6 @@
 # On-device validation plan
 
-The TWRP 3.7.1 adaptation in this repository has not been built or device-tested. The last hardware-verified menu booted the separate TWRP 3.3.1 FIT; the latest recorded hardware status is in [`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
+The TWRP 3.7.1 adaptation in this repository has been host-built (2026-10-02) but not device-tested. The last hardware-verified menu booted the separate TWRP 3.3.1 FIT; the latest recorded hardware status is in [`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
 
 This is a test plan, not a record of completed checks. Build and package the FIT before the boot phase. Building is host-side; integrating a new FIT may require a cache-payload write owned by the U-Boot project, which needs explicit authorization.
 

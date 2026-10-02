@@ -11,8 +11,8 @@ direct ABL -> recovery path in use, and the `recovery` partition is not the
 normal boot source for TWRP on this setup.
 
 The last hardware-verified menu boots MIUI and the legacy TWRP 3.3.1 FIT. The
-TWRP 3.7.1 adaptation in this repository has not been built or integrated; see
-[`STATUS.md`](STATUS.md) and the workspace
+TWRP 3.7.1 adaptation in this repository has been host-built (2026-10-02) but
+not integrated or device-tested; see [`STATUS.md`](STATUS.md) and the workspace
 [`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
 
 ## Verified menu and candidate layout
@@ -72,10 +72,10 @@ system FIT exists and its slot, size, checksums and read length agree.
 
 The script prints the exact replacement for `boot_twrp`, recomputed for the
 new FIT size, plus SHA-256 and block count. If the FIT exceeds 64 MiB it warns
-and the cache-payload layout has to be renegotiated. The TWRP build has not yet
-been run, so inspect the selected kernel artifact: `BoardConfig.mk` names
-`Image-dtb`, while this FIT path expects a raw `Image` plus the separate live
-DT. Do not infer the packaged kernel form before the first build.
+and the cache-payload layout has to be renegotiated. The 2026-10-02 build
+packaged the raw `Image` (48,443,408 B, `af1063fa…`) with the separate live DT;
+`BoardConfig.mk` still names `Image-dtb` for the recovery image. Re-check the
+selected kernel artifact after any build-config change.
 
 ## Ownership boundary
 

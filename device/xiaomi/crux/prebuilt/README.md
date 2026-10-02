@@ -13,14 +13,15 @@ ABL live device tree captured from the hardware-verified legacy TWRP 3.3.1 U-Boo
   overlay nodes that drive the panel, touch and TEE in recovery.
 
 `scripts/make-fit.sh` uses this file by default for the new TWRP 3.7.1 candidate;
-that candidate has not been built or device-tested. Regenerate it only from a
-working recovery (`/sys/firmware/fdt`) or build a replacement from
-`sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo` and patch `/chosen/bootargs`.
+the candidate was host-built on 2026-10-02 but is not device-tested. Regenerate
+it only from a working recovery (`/sys/firmware/fdt`) or build a replacement
+from `sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo` and patch `/chosen/bootargs`.
 
 ## No prebuilt kernel
 
 The kernel is not committed here. TWRP builds it from the
 `coachpo/kernel_xiaomi_crux` `thirteen-plus` branch through
-`vendor/twrp/build/tasks/kernel.mk`; the expected SHA is a warning check, not a
-manifest pin (see `docs/KERNEL.md`). For quick
+`vendor/twrp/build/tasks/kernel.mk`; the revision is pinned to
+`b5ef11095c53…` in `manifests/crux-twrp.xml` and enforced by
+`scripts/build-twrp.sh` (see `docs/KERNEL.md`). For quick
 iteration, pass `TARGET_PREBUILT_KERNEL` to `scripts/build-twrp.sh`.
