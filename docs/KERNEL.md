@@ -13,18 +13,19 @@ The kernel is **not** stored in this repository. TWRP's inline kernel build
 | `BOARD_KERNEL_IMAGE_NAME` | `Image-dtb` |
 | `BOARD_KERNEL_SEPARATED_DTBO` | `true` |
 
-The manifest follows branch `thirteen-plus` and the build script warns when the
-checkout differs from the expected revision; it does not pin the commit:
+The manifest pins the kernel project to the verified PE13 revision on branch
+`thirteen-plus`; `scripts/build-twrp.sh` aborts when the checkout differs (set
+`ALLOW_KERNEL_REVISION_MISMATCH=1` only for deliberate local experiments):
 
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="github"
-         revision="thirteen-plus" clone-depth="1" />
+         revision="b5ef11095c5389f937514d59da39c35cd244d971" clone-depth="1" />
 ```
 
-The expected revision is `b5ef11095c5389f937514d59da39c35cd244d971` (see
-`scripts/build-twrp.sh`); the branch can move. That revision is the PE13 kernel
-used by the current workspace:
+The pinned revision is `b5ef11095c5389f937514d59da39c35cd244d971`
+(`scripts/setup-twrp.sh` uses the same pin in local-device mode). That revision
+is the PE13 kernel used by the current workspace:
 
 ```text
 Linux version 4.14.357-openela-Marisa-20260104-ksunext
@@ -33,7 +34,11 @@ Linux version 4.14.357-openela-Marisa-20260104-ksunext
 It chains CAF `msm-4.14` `LA.UM.9.1.r1-16400` + Android 4.14-stable
 (4.14.336) + OpenELA `v4.14.357` + crux DTS/touch/FOD/haptics adaptation
 (`crux: align boot, touch and FOD interfaces with Android 13`, etc.). The
-matching PE13 artifacts are archived at `out/crux-kernel-2026-10-01/`.
+matching PE13 artifacts are archived at `out/crux-kernel-2026-10-01/`; that
+archive is the pre-pstore build (`df7d3aaa…`, no `CONFIG_PSTORE*`). The PE13
+build worktree in the VM currently carries uncommitted diagnostic changes
+(pstore/hung-task/softlockup defconfig, KGSL GPU-probe code); those are not part
+of the pinned revision and are not the release kernel.
 
 ## Toolchain
 
@@ -58,8 +63,9 @@ TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 
 ## Optional TWRP kernel fragment
 
-The PE13 `crux_defconfig` already contains everything recovery needs. Three
-options are absent and are **optional** for the first bring-up:
+At the pinned revision the committed `crux_defconfig` already contains
+everything recovery needs. Three options are absent from it and are
+**optional** for the first bring-up:
 
 | Option | Effect | Why it may be wanted |
 |---|---|---|
@@ -71,7 +77,10 @@ To add them, place a fragment in the kernel repository at
 `arch/arm64/configs/crux_twrp_defconfig` and set
 `TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig`. This is deliberately
 not enabled yet: it modifies the shared PE13 kernel repository and the missing
-options do not block recovery.
+options do not block recovery. The PE13 debug worktree's uncommitted defconfig
+already enables pstore and hung-task diagnostics, but that is a temporary PE13
+debugging variant, not the pinned configuration; do not rely on it for a
+reproducible TWRP build.
 
 ## Verified kernel capabilities for TWRP
 
@@ -88,8 +97,8 @@ From the built PE13 `kernel.config`:
 - `CONFIG_FW_LOADER=y`, `CONFIG_RD_GZIP=y`, `CONFIG_RD_LZMA=y`, `CONFIG_RD_ZSTD=y`
 - Security: `CONFIG_SECURITY_SELINUX=y`
 
-Absent (see fragment table): `SERIAL_MSM_GENI_CONSOLE`, `DRM_FBDEV_EMULATION`,
-`PSTORE`, `PSTORE_RAM`.
+Absent from the pinned/archived config (see the fragment table):
+`SERIAL_MSM_GENI_CONSOLE`, `DRM_FBDEV_EMULATION`, `PSTORE`, `PSTORE_RAM`.
 
 ## Modules
 
@@ -100,10 +109,11 @@ above.
 
 ## Updating the kernel
 
-1. Choose the kernel branch and expected revision deliberately. Update
-   `manifests/crux-twrp.xml`, `scripts/build-twrp.sh`'s expected SHA and the
-   README table together; the manifest tracks a branch and the warning is not
-   an enforcement check.
+1. Choose the kernel revision deliberately. Update `manifests/crux-twrp.xml`
+   (the canonical pin), the `EXPECTED_KERNEL_SHA` in `scripts/build-twrp.sh`,
+   the heredoc in `scripts/setup-twrp.sh`, and the README table together.
 2. If the PE13 device tree also consumes the same kernel commit, keep both in
    sync (the PE13 manifest pins `b5ef1109` as well).
-3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild.
+3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild from
+   a clean kernel checkout; uncommitted defconfig or driver experiments change
+   the kernel even when HEAD matches.

@@ -47,13 +47,15 @@ mkdir -p "$MANIFEST_DIR"
 
 if [ -n "$LOCAL_DEVICE" ]; then
     echo "==> using local device tree: $LOCAL_DEVICE"
+    # Kernel revision pinned to the verified PE13 commit; keep in sync with
+    # manifests/crux-twrp.xml and scripts/build-twrp.sh.
     cat > "$MANIFEST_DIR/crux-twrp.xml" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
              remote="github"
-             revision="thirteen-plus"
+             revision="b5ef11095c5389f937514d59da39c35cd244d971"
              clone-depth="1" />
 </manifest>
 EOF

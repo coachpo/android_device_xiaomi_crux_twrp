@@ -14,6 +14,8 @@
 #   TARGET_FORCE_PREBUILT_KERNEL=1   Required together with
 #                            TARGET_PREBUILT_KERNEL when the kernel source is
 #                            present (see vendor/twrp/build/tasks/kernel.mk).
+#   ALLOW_KERNEL_REVISION_MISMATCH=1  Build even when kernel/xiaomi/crux is
+#                            not at the pinned revision (unreproducible).
 #
 set -eo pipefail
 
@@ -44,12 +46,23 @@ if [ -n "${LOCAL_DEVICE:-}" ]; then
     fi
 fi
 
+# Pinned PE13 kernel revision; keep in sync with manifests/crux-twrp.xml and
+# scripts/setup-twrp.sh.
 EXPECTED_KERNEL_SHA="b5ef11095c5389f937514d59da39c35cd244d971"
 if [ -d kernel/xiaomi/crux/.git ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
     if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then
-        echo "warning: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-unknown}" >&2
-        echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.357 PE13 kernel)" >&2
+        echo "kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-unknown}" >&2
+        echo "expected $EXPECTED_KERNEL_SHA (Linux 4.14.357 PE13 kernel)" >&2
+        if [ -n "${TARGET_PREBUILT_KERNEL:-}" ] && [ -n "${TARGET_FORCE_PREBUILT_KERNEL:-}" ]; then
+            echo "warning: continuing because a prebuilt kernel was forced" >&2
+        elif [ -n "${ALLOW_KERNEL_REVISION_MISMATCH:-}" ]; then
+            echo "warning: ALLOW_KERNEL_REVISION_MISMATCH is set; continuing" >&2
+        else
+            echo "error: refusing to build with a mismatched kernel" >&2
+            echo "       set ALLOW_KERNEL_REVISION_MISMATCH=1 to build with it anyway" >&2
+            exit 1
+        fi
     fi
 fi
 
