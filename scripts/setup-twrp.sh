@@ -53,7 +53,8 @@ if [ -n "$LOCAL_DEVICE" ]; then
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
              remote="github"
-             revision="b5ef11095c5389f937514d59da39c35cd244d971" />
+             revision="thirteen-plus"
+             clone-depth="1" />
 </manifest>
 EOF
 else

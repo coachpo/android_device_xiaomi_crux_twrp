@@ -32,6 +32,15 @@ if [ ! -f build/envsetup.sh ]; then
     exit 1
 fi
 
+EXPECTED_KERNEL_SHA="b5ef11095c5389f937514d59da39c35cd244d971"
+if [ -d kernel/xiaomi/crux/.git ]; then
+    ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
+    if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then
+        echo "warning: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-unknown}" >&2
+        echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.357 PE13 kernel)" >&2
+    fi
+fi
+
 export ALLOW_MISSING_DEPENDENCIES=true
 export LC_ALL=C
 export TW_DEFAULT_LANGUAGE=zh_CN

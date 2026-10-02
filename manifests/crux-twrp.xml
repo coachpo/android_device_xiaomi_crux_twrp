@@ -22,5 +22,12 @@
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
              remote="github"
-             revision="b5ef11095c5389f937514d59da39c35cd244d971" />
+             revision="thirteen-plus"
+             clone-depth="1" />
+    <!--
+        Expected source revision:
+        b5ef11095c5389f937514d59da39c35cd244d971 (2026-09-15,
+        "crux: correct build configuration and CPU cluster handling").
+        scripts/build-twrp.sh warns if the checkout differs.
+    -->
 </manifest>
