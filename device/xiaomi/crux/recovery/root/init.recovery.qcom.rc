@@ -1,0 +1,40 @@
+# Crux (Xiaomi Mi 9 Pro 5G, msmnile) recovery init
+#
+# Boot contract: this recovery is started by the U-Boot boot menu
+# (board/qualcomm/xiaomi-crux.env -> boot_twrp). U-Boot passes the ABL live
+# device tree and the stock ABL bootargs, so the device node names below match
+# the stock firmware.
+
+on init
+    # The stock crux TEE exposes keymaster 4.0 and gatekeeper 1.0
+    setprop keymaster_ver 4.0
+    setprop sys.usb.configfs 1
+
+on fs
+    wait /dev/block/platform/soc/${ro.boot.bootdevice}
+    symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
+    chmod 0660 /dev/qseecom
+    chown system drmrpc /dev/qseecom
+    chmod 0664 /dev/ion
+    chown system system /dev/ion
+    install_keyring
+
+on property:ro.boot.usbcontroller=*
+    setprop sys.usb.controller ${ro.boot.usbcontroller}
+    write /sys/class/udc/${ro.boot.usbcontroller}/device/../mode peripheral
+
+# Decryption services (qseecomd + keymaster/gatekeeper + prepdecrypt) are
+# installed by device/qcom/twrp-common through the qcom_decrypt and
+# qcom_decrypt_fbe packages. The import below is added automatically by that
+# package; it is kept explicit so the tree is self-documenting.
+import /init.recovery.qcom_decrypt.rc
+
+# AW8697 haptics (optional, harmless if the service cannot start)
+service qti.vibrator /system/bin/vendor.qti.hardware.vibrator.service
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+on boot
+    start qti.vibrator

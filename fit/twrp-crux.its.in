@@ -1,0 +1,55 @@
+# FIT template used by scripts/make-fit.sh.
+#
+# @ITS_COMP@ is replaced with "gzip" (U-Boot decompresses the kernel) or
+# "none". Copying this file is normally not needed: make-fit.sh generates the
+# concrete ITS next to the output .itb.
+#
+# Address contract (must match board/qualcomm/xiaomi-crux.env boot_twrp):
+#   kernel  load/entry 0x80080000
+#   ramdisk load        0x83000000
+#   fdt     load        0x84800000
+#   fdt_high 0x84900000, initrd_high 0x84200000
+
+/dts-v1/;
+
+/ {
+	description = "Crux boot menu: TWRP 3.7.1 (twrp-12.1) recovery";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	images {
+		kernel {
+			description = "Crux Marisa 4.14 Image (TWRP build)";
+			data = /incbin/("kernel.bin");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "@ITS_COMP@";
+			load = <0x80080000>;
+			entry = <0x80080000>;
+			hash-1 { algo = "sha256"; };
+		};
+		fdt {
+			description = "ABL live recovery DTB";
+			data = /incbin/("fdt.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x84800000>;
+			hash-1 { algo = "sha256"; };
+		};
+		ramdisk {
+			description = "TWRP recovery ramdisk (gzip)";
+			data = /incbin/("ramdisk.gz");
+			type = "ramdisk";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x83000000>;
+			hash-1 { algo = "sha256"; };
+		};
+	};
+	configurations {
+		default = "conf";
+		conf { kernel = "kernel"; fdt = "fdt"; ramdisk = "ramdisk"; };
+	};
+};

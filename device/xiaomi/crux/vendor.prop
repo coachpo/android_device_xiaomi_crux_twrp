@@ -1,0 +1,8 @@
+# PE13 /data uses FBE v2 with inline encryption ("fileencryption=ice") and
+# metadata encryption (dm-default-key, options v2). These properties tell
+# vold/TWRP how the encrypted userdata was created so that decryption and
+# formatting use the same scheme.
+ro.crypto.dm_default_key.options_format.version=2
+ro.crypto.volume.metadata.method=dm-default-key
+ro.crypto.volume.options=::v2
+ro.crypto.volume.filenames_mode=aes-256-cts

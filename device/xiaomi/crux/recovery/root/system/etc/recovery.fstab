@@ -1,0 +1,14 @@
+# Android fstab for TWRP recovery on crux (Xiaomi Mi 9 Pro 5G).
+#
+# This is the fs_mgr-style fstab. TWRP merges it with /system/etc/twrp.flags
+# (see device/xiaomi/crux/recovery/root/system/etc/twrp.flags) to obtain the
+# full mount / backup / flash layout.
+#
+# Sources:
+#   - PE13 device tree:  device/xiaomi/crux/rootdir/etc/fstab.qcom
+#   - Stock crux TWRP:   twrp-proven-img/recovery.img (/etc/recovery.fstab)
+#
+# <src>                                      <mnt_point>  <type>  <mnt_flags and options>                                          <fs_mgr_flags>
+/dev/block/bootdevice/by-name/metadata       /metadata    ext4    noatime,nosuid,nodev,discard,data=journal,commit=1               wait,check,formattable
+/dev/block/bootdevice/by-name/userdata       /data        ext4    noatime,nosuid,nodev,barrier=1,noauto_da_alloc,inlinecrypt       latemount,wait,check,fileencryption=ice,keydirectory=/metadata/vold/metadata_encryption,quota,reservedsize=128M
+/dev/block/bootdevice/by-name/misc           /misc        emmc    defaults                                                         defaults

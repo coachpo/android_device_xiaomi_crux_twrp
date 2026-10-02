@@ -1,0 +1,5 @@
+# Placeholder for device-specific decryption services.
+#
+# device/qcom/twrp-common ships init.recovery.qcom_decrypt.rc with an
+# "import /init.recovery.services.qcom_decrypt.rc" line. This file exists so
+# that the import resolves; add device-only services here if needed.

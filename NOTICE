@@ -1,0 +1,24 @@
+NOTICE
+
+This repository contains original configuration, scripts and documentation
+licensed under Apache-2.0 (see LICENSE), plus prebuilt binaries taken from the
+stock firmware of the Xiaomi Mi 9 Pro 5G (crux) for interoperability with the
+device's TrustZone / keymaster / gatekeeper / vibrator hardware:
+
+  device/xiaomi/crux/recovery/root/system/bin/*
+  device/xiaomi/crux/recovery/root/system/lib64/*
+  device/xiaomi/crux/recovery/root/vendor/lib64/*
+  device/xiaomi/crux/recovery/root/vendor/firmware/*
+
+These files are proprietary Xiaomi/Qualcomm binaries. They are included only
+so that a recovery image built from this tree can talk to the device's stock
+security hardware and are not covered by the Apache-2.0 licence of the
+original work. They were obtained from the device's stock firmware via the
+public community crux TWRP device tree (TWRP A12.1). Redistribute them under
+the terms that apply to the stock firmware.
+
+The U-Boot live device tree in device/xiaomi/crux/prebuilt/live-dt/ is a dump
+of the device's own bootloader-provided device tree, kept for the same
+interoperability purpose.
+
+TWRP itself is licensed separately by Team Win LLC / the TeamWin project.

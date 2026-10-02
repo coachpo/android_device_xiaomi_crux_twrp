@@ -1,0 +1,12 @@
+# ADB
+ro.adb.secure=0
+
+# Keymaster / Gatekeeper (stock crux TEE services in the recovery ramdisk)
+keymaster_ver=4.0
+vendor.gatekeeper.disable_spu=true
+
+# Charger / battery
+ro.charger.enable_suspend=1
+
+# Timezone
+persist.sys.timezone=Asia/Shanghai

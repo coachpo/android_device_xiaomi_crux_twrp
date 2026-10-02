@@ -1,0 +1,6 @@
+out/
+build/
+twrp-12.1/
+*.log
+.DS_Store
+__pycache__/

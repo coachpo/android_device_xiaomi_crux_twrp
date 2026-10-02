@@ -1,0 +1,62 @@
+# Status
+
+As of 2026-10-02 this repository contains a complete **code-level** TWRP
+adaptation for crux on the TWRP 12.1 baseline. No build has been run from this
+repository yet and no image has been flashed to a device.
+
+## Component state
+
+| Component | State | Notes |
+|---|---|---|
+| TWRP baseline | configured | `twrp-12.1` (3.7.1_12); `lunch twrp_crux-eng` |
+| Kernel source integration | configured | inline build of `kernel/xiaomi/crux` (`crux_defconfig`), pinned `b5ef1109`; PE13 4.14.357 |
+| Device kernel capabilities | verified (config) | binderfs, dm-default-key, dm-crypt/verity, FBE v2+ICE, EROFS, UFS, DRM, touch — see `KERNEL.md` |
+| Partition / fstab layout | configured | static non-A/B; exact PE13 userdata flags (`fileencryption=ice`, metadata keydirectory, reservedsize) |
+| `twrp.flags` | configured | full crux partition list converted from the proven 3.3.1 image to TWRP 12.1 syntax |
+| Display / touch / keys | configured, unverified | RGBX_8888 DRM path, `hbtp_vm` input blacklist, panel0 backlight, ST FTS firmware from `firmware_mnt` |
+| USB (adb / MTP) | configured, unverified | custom configfs `init.recovery.usb.rc` + `a600000.dwc3` |
+| Crypto / decryption | configured, unverified | twrp-common `qcom_decrypt` + `qcom_decrypt_fbe`, stock keymaster 4.0 / gatekeeper 1.0 / qseecomd blobs, FBE v2 props |
+| Haptics | configured, unverified | AW8697 firmware in ramdisk + vibrator HAL binaries |
+| U-Boot FIT packaging | configured | `scripts/make-fit.sh`, gzip kernel + live DT, recomputes `boot_twrp` blocks |
+| Build | **not run** | needs an x86_64 Linux host with ~150 GB free |
+| Recovery on device | **not run** | requires the boot-menu session for the cache payload |
+| Decryption on PE13 data | **not verified** | main functional risk |
+
+## Open risks / questions
+
+1. **FIT size vs cache slot.** The TWRP 12.1 ramdisk is larger than the 3.3.1
+   LZMA ramdisk. The script compresses the kernel to keep the FIT under the
+   64 MiB slot, but the actual size is only known after the first build. If it
+   does not fit, the cache layout must be renegotiated with the U-Boot session.
+2. **Decryption of PE13 `/data`.** PE13 uses `fileencryption=ice` +
+   metadata encryption (`dm-default-key`, options v2) with the nabu Android 12
+   keymaster line. The ramdisk ships the stock crux keymaster 4.0/gatekeeper 1.0
+   blobs; the metadata/v2 combination is the same class that the community
+   crux A12.1 tree reported as broken ("Data 解密" in its README). Expect this
+   to need on-device iteration.
+3. **Pixel format.** The community crux TWRP trees use `RGBX_8888`, while the
+   PE13 recovery uses `BGRA_8888`. `RGBX_8888` is configured here; if the
+   colours are wrong, switch to `BGRA_8888` and rebuild.
+4. **Touch firmware.** `FW_UPDATE_ON_PROBE` makes the ST FTS driver use
+   `request_firmware()`; the ramdisk relies on the modem partition being
+   mounted at `/vendor/firmware_mnt/image`. If touch does not work, check that
+   mount and the `ueventd.qcom.rc` `firmware_directories` line.
+5. **Vibrator / haptics HAL** binaries are stock MIUI; the service is
+   optional and harmless if it cannot start.
+6. **AVB.** The recovery image is built with an AVB test key. The device is
+   unlocked and boots through U-Boot, so AVB only matters if the image is
+   flashed to the recovery partition and booted by ABL — a use case that is
+   explicitly not the primary path.
+7. **`CONFIG_DM_INIT` absent.** The PE13 kernel cannot parse MIUI's
+   `dm=`/`root=/dev/dm-0` boot args. That affects booting MIUI with this
+   kernel, not TWRP (TWRP sets up its own mounts).
+
+## Next steps
+
+1. Compile on the build host (`scripts/setup-twrp.sh` + `scripts/build-twrp.sh`)
+   and fix any device-tree build errors.
+2. Measure the FIT and confirm the 64 MiB slot, or hand the new offsets to the
+   boot-menu session.
+3. Request device time and run `docs/DEVICE-TEST.md` (read-only first).
+4. Iterate on decryption and display/touch if needed.
+5. Only later: evaluate `twrp-14.1` (`3.7.1_14`).
