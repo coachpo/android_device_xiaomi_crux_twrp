@@ -1,10 +1,13 @@
 # Status
 
 As of 2026-10-02 this repository contains a complete **code-level** TWRP
-adaptation for crux on the TWRP 12.1 baseline. No build has been run from this
-repository yet; no artifact from this adaptation has been flashed or tested on
-device. The phone has separately booted the older TWRP 3.3.1 FIT from the
-verified U-Boot menu; see `../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`.
+adaptation for crux on the TWRP 12.1 baseline. The device tree **builds
+successfully** on the OrbStack `cruxbuild` VM (128 MiB `recovery.img`,
+24.5 MB ramdisk, 44.4 MB U-Boot FIT); see
+[`BUILD-RESULTS-2026-10-02.md`](BUILD-RESULTS-2026-10-02.md). No artifact from
+this adaptation has been flashed or tested on device yet. The phone has
+separately booted the older TWRP 3.3.1 FIT from the verified U-Boot menu; see
+`../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`.
 
 ## Component state
 
@@ -20,16 +23,15 @@ verified U-Boot menu; see `../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`.
 | Crypto / decryption | configured, unverified | twrp-common `qcom_decrypt` + `qcom_decrypt_fbe`, stock keymaster 4.0 / gatekeeper 1.0 / qseecomd blobs, FBE v2 props |
 | Haptics | configured, unverified | AW8697 firmware in ramdisk + vibrator HAL binaries |
 | U-Boot FIT packaging | configured | `scripts/make-fit.sh`, gzip kernel + live DT, recomputes `boot_twrp` blocks |
-| Build | **not run** | needs an x86_64 Linux userspace; ~150 GB free is a planning estimate, check space before syncing |
+| Build | **verified 2026-10-02** | `lunch twrp_crux-eng` + `mka recoveryimage` on the `cruxbuild` VM; kernel 4.14.357 from source with LLVM tools; see `BUILD-RESULTS-2026-10-02.md` |
 | Recovery on device | **not run for this adaptation** | the verified menu still boots the separate legacy TWRP 3.3.1 FIT |
 | Decryption on PE13 data | **not verified** | main functional risk |
 
 ## Open risks / questions
 
-1. **FIT size vs cache slot.** The TWRP 12.1 ramdisk is larger than the 3.3.1
-   LZMA ramdisk. The script compresses the kernel to keep the FIT under the
-   64 MiB slot, but the actual size is only known after the first build. If it
-   does not fit, the cache layout must be renegotiated with the U-Boot session.
+1. **FIT size vs cache slot.** Resolved for this build: the gzip-kernel FIT is
+   44,398,928 B (`0x2a58` blocks) and leaves 22,177 KiB free in the 64 MiB TWRP
+   cache slot. Re-check after any ramdisk or kernel change.
 2. **Decryption of PE13 `/data`.** PE13 uses `fileencryption=ice` +
    metadata encryption (`dm-default-key`, options v2) with the nabu Android 12
    keymaster line. The ramdisk ships the stock crux keymaster 4.0/gatekeeper 1.0
@@ -55,10 +57,10 @@ verified U-Boot menu; see `../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`.
 
 ## Next steps
 
-1. Compile on the build host (`scripts/setup-twrp.sh` + `scripts/build-twrp.sh`)
-   and fix any device-tree build errors.
-2. Measure the FIT and confirm the 64 MiB slot, or hand the new offsets to the
-   boot-menu session.
-3. After a build and FIT handoff, obtain explicit authorization for the needed device operations and follow `docs/DEVICE-TEST.md` by phase.
+1. ~~Compile on the build host and fix any device-tree build errors.~~ Done
+   2026-10-02; see `BUILD-RESULTS-2026-10-02.md`.
+2. Hand the new `boot_twrp` block count (`0x2a58`, was `0x3486`) and the FIT to
+   the U-Boot boot-menu session and prepare a cache payload copy.
+3. After the FIT handoff, obtain explicit authorization for the needed device operations and follow `docs/DEVICE-TEST.md` by phase.
 4. Iterate on decryption and display/touch if needed.
 5. Only later: evaluate `twrp-14.1` (`3.7.1_14`).

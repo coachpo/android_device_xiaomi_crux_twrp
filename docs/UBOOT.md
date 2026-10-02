@@ -46,7 +46,10 @@ Address contract used by the FIT:
 
 `scsi read 0xC0000000 0x34000 <blocks>` reads a TWRP FIT from cache LBA
 `0x34000` (64 MiB into the payload); `<blocks>` is the FIT size in 4096-byte
-blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes).
+blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes); the
+first TWRP 3.7.1 build is `0x2a58` blocks (44,398,928 bytes, see
+`BUILD-RESULTS-2026-10-02.md`), so the boot menu environment must be updated
+when the new FIT is deployed.
 
 The PE payload currently is not a valid four-entry boot layout: `make-cache-payload.py`
 uses `pe-recovery-live.itb` as a fallback when `pe-rom.itb` is absent. That

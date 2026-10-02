@@ -9,9 +9,9 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 | Device tree path | `device/xiaomi/crux` |
 | Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `b5ef11095c5389f937514d59da39c35cd244d971` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
-| Status | **Code-level adaptation complete; not yet compiled or device-verified** (see `docs/STATUS.md`) |
+| Status | **Code-level adaptation complete; host build verified 2026-10-02; not device-verified** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`) |
 
-The verified device menu currently boots the older TWRP 3.3.1 from cache; the
+The last hardware-verified menu boots the older TWRP 3.3.1 from cache; the
 new 3.7.1 adaptation in this repository has not been built or device-tested.
 U-Boot source and payload ownership is in `u-boot-port/`. This repository
 produces the FIT and its exact `boot_twrp` command for integration; it does not
@@ -33,13 +33,14 @@ docs/UBOOT.md                boot chain, FIT contract, cache layout
 docs/KERNEL.md               kernel source integration and toolchain
 docs/DEVICE-TEST.md          on-device validation plan (read-only first)
 docs/STATUS.md               what is done, what is open
+docs/BUILD-RESULTS-2026-10-02.md   first successful build: sizes, hashes, fixes
 ```
 
 ## Requirements
 
 - x86_64 Linux userspace (the workspace's build VM is `cruxbuild`). About
-  150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`; this
-  TWRP build has not yet been run, so check available space before syncing.
+  150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`; the
+  first full sync used ~34 GB on top of the previously built tree.
 - `repo` (Android repo launcher).
 - U-Boot `mkimage` for packaging the FIT (the crux U-Boot tree's
   `tools/mkimage`, or any U-Boot `mkimage` on `PATH`).
@@ -72,6 +73,27 @@ rebuilding the source:
 TARGET_PREBUILT_KERNEL="$PWD/../out/crux-kernel-2026-10-01/Image" \
 TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 ```
+
+## Verified build (2026-10-02)
+
+`lunch twrp_crux-eng && mka recoveryimage` completed on the `cruxbuild` VM
+with the kernel built from source. Artifacts are archived in the workspace at
+`out/twrp-crux-2026-10-02/`:
+
+| Artifact | Size | SHA-256 |
+|---|---|---|
+| `recovery.img` | 128 MiB | `a715b1fb…b17217` |
+| `ramdisk-recovery.img` | 24,518,969 B | `59c006aa…c71e3f3` |
+| `kernel` (`Image-dtb`) | 50,441,476 B | `8cb961b1…4f38d1` |
+| `Image` (raw) | 48,443,408 B | `af1063fa…e86889` |
+| `twrp-crux.itb` | 44,398,928 B | `3170852a…335b23` |
+
+- Kernel banner: `Linux version 4.14.357-openela-Marisa-20260104-ksunext`
+  (clang 12.0.7, LLD 12.0.7).
+- TWRP identity: `3.7.1_12-crux-twrp-12.1`.
+- U-Boot FIT: `0x2a58` blocks (was `0x3486` for the proven 3.3.1 FIT), 22,177
+  KiB free in the 64 MiB TWRP cache slot.
+- Full report and the build fixes: `docs/BUILD-RESULTS-2026-10-02.md`.
 
 ## Why twrp-12.1 and not a newer branch
 
