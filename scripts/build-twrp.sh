@@ -15,7 +15,7 @@
 #                            TARGET_PREBUILT_KERNEL when the kernel source is
 #                            present (see vendor/twrp/build/tasks/kernel.mk).
 #
-set -euo pipefail
+set -eo pipefail
 
 TREE="${1:-$PWD/twrp-12.1}"
 shift || true
@@ -46,7 +46,9 @@ export LC_ALL=C
 export TW_DEFAULT_LANGUAGE=zh_CN
 
 # shellcheck disable=SC1091
+set +u
 source build/envsetup.sh
+set -e
 
 echo "==> lunch twrp_crux-eng"
 lunch twrp_crux-eng
