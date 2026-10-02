@@ -8,10 +8,9 @@
         cp manifests/crux-twrp.xml .repo/local_manifests/
         repo sync
 
-    The kernel project is pinned to branch thirteen-plus at the verified PE13
-    source revision b5ef11095c5389f937514d59da39c35cd244d971 (Linux
-    4.14.357-openela "Marisa"); scripts/build-twrp.sh aborts on mismatch
-    unless ALLOW_KERNEL_REVISION_MISMATCH=1 is set.
+    The kernel project follows the thirteen-plus branch. The expected PE13
+    source revision is b5ef11095c5389f937514d59da39c35cd244d971 (Linux
+    4.14.357-openela "Marisa"); scripts/build-twrp.sh only warns on mismatch.
     TWRP builds the kernel from source through vendor/twrp/build/tasks/kernel.mk.
 -->
 <manifest>
@@ -23,13 +22,12 @@
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
              remote="github"
-             revision="b5ef11095c5389f937514d59da39c35cd244d971"
+             revision="thirteen-plus"
              clone-depth="1" />
     <!--
-        Pinned revision:
+        Expected source revision:
         b5ef11095c5389f937514d59da39c35cd244d971 (2026-09-15,
         "crux: correct build configuration and CPU cluster handling").
-        scripts/setup-twrp.sh and scripts/build-twrp.sh carry the same pin;
-        build-twrp.sh aborts if the checkout differs.
+        scripts/build-twrp.sh warns if the checkout differs.
     -->
 </manifest>

@@ -21,7 +21,6 @@ from `sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo` and patch `/chosen/bootargs`.
 
 The kernel is not committed here. TWRP builds it from the
 `coachpo/kernel_xiaomi_crux` `thirteen-plus` branch through
-`vendor/twrp/build/tasks/kernel.mk`; the revision is pinned to
-`b5ef11095c53…` in `manifests/crux-twrp.xml` and enforced by
-`scripts/build-twrp.sh` (see `docs/KERNEL.md`). For quick
+`vendor/twrp/build/tasks/kernel.mk`; the expected SHA is a warning check, not a
+manifest pin (see `docs/KERNEL.md`). For quick
 iteration, pass `TARGET_PREBUILT_KERNEL` to `scripts/build-twrp.sh`.
