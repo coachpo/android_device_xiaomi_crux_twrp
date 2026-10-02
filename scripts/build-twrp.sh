@@ -32,6 +32,18 @@ if [ ! -f build/envsetup.sh ]; then
     exit 1
 fi
 
+# Keep the device tree in sync when developing against a local checkout.
+# A symlink is not enough: the AOSP product scan does not follow symlinked
+# device directories.
+if [ -n "${LOCAL_DEVICE:-}" ]; then
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete "$LOCAL_DEVICE/" "$TREE/device/xiaomi/crux/"
+    else
+        rm -rf "$TREE/device/xiaomi/crux"
+        cp -a "$LOCAL_DEVICE" "$TREE/device/xiaomi/crux"
+    fi
+fi
+
 EXPECTED_KERNEL_SHA="b5ef11095c5389f937514d59da39c35cd244d971"
 if [ -d kernel/xiaomi/crux/.git ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"

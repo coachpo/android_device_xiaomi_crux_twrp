@@ -66,9 +66,13 @@ echo "==> repo sync (-j$JOBS, this downloads the TWRP 12.1 tree)"
 repo sync -c --no-clone-bundle --no-tags -j"$JOBS"
 
 if [ -n "$LOCAL_DEVICE" ]; then
+    # The AOSP product scan does not follow symlinked device directories, so
+    # copy the tree instead of linking it. build-twrp.sh refreshes the copy
+    # on every build when LOCAL_DEVICE is set.
     mkdir -p "$TREE/device/xiaomi"
-    ln -sfn "$(cd "$LOCAL_DEVICE" && pwd)" "$TREE/device/xiaomi/crux"
-    echo "==> linked $TREE/device/xiaomi/crux -> $LOCAL_DEVICE"
+    rm -rf "$TREE/device/xiaomi/crux"
+    cp -a "$LOCAL_DEVICE" "$TREE/device/xiaomi/crux"
+    echo "==> copied $LOCAL_DEVICE -> $TREE/device/xiaomi/crux"
 fi
 
 echo
