@@ -3,8 +3,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# Note: paths in this file that are consumed after the product configuration
+# phase (TARGET_SYSTEM_PROP, TARGET_VENDOR_PROP) must not use $(LOCAL_PATH):
+# that variable can be redefined/cleared before those variables are expanded,
+# which turns "device/xiaomi/crux/system.prop" into "/system.prop".
+#
 
-LOCAL_PATH := device/xiaomi/crux
+DEVICE_PATH := device/xiaomi/crux
 
 # ---------------------------------------------------------------------------
 # API level (device shipped Android 9; PE13 target is Android 13)
@@ -15,8 +20,8 @@ PRODUCT_SHIPPING_API_LEVEL := 29
 # ---------------------------------------------------------------------------
 # Properties
 # ---------------------------------------------------------------------------
-TARGET_SYSTEM_PROP += $(LOCAL_PATH)/system.prop
-TARGET_VENDOR_PROP += $(LOCAL_PATH)/vendor.prop
+TARGET_SYSTEM_PROP += device/xiaomi/crux/system.prop
+TARGET_VENDOR_PROP += device/xiaomi/crux/vendor.prop
 
 # ---------------------------------------------------------------------------
 # Crypto / decryption
@@ -51,9 +56,9 @@ RECOVERY_LIBRARY_SOURCE_FILES += \
 
 # TWRP-specific mount/flash layout (merged with recovery.fstab by TWRP)
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/recovery/root/system/etc/twrp.flags:$(TARGET_COPY_OUT_RECOVERY)/root/system/etc/twrp.flags
+    device/xiaomi/crux/recovery/root/system/etc/twrp.flags:$(TARGET_COPY_OUT_RECOVERY)/root/system/etc/twrp.flags
 
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
-    $(LOCAL_PATH) \
+    device/xiaomi/crux \
     vendor/qcom/opensource/commonsys-intf/display
