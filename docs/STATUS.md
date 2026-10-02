@@ -14,7 +14,7 @@ separately booted the older TWRP 3.3.1 FIT from the verified U-Boot menu; see
 | Component | State | Notes |
 |---|---|---|
 | TWRP baseline | configured | `twrp-12.1` (3.7.1_12); `lunch twrp_crux-eng` |
-| Kernel source integration | configured | inline build of `kernel/xiaomi/crux` (`crux_defconfig`), branch `thirteen-plus`; expected revision `b5ef1109` (the build script warns on mismatch but does not fail); PE13 4.14.357 |
+| Kernel source integration | configured | inline build of `kernel/xiaomi/crux` (`crux_defconfig`), branch `thirteen-plus`; expected revision `c5afe30f211b` (the build script warns on mismatch but does not fail); PE13 4.14.357 |
 | Device kernel capabilities | verified (config) | binderfs, dm-default-key, dm-crypt/verity, FBE v2+ICE, EROFS, UFS, DRM, touch — see `KERNEL.md` |
 | Partition / fstab layout | configured | static non-A/B; exact PE13 userdata flags (`fileencryption=ice`, metadata keydirectory, reservedsize) |
 | `twrp.flags` | configured | full crux partition list converted from the proven 3.3.1 image to TWRP 12.1 syntax |
@@ -23,15 +23,16 @@ separately booted the older TWRP 3.3.1 FIT from the verified U-Boot menu; see
 | Crypto / decryption | configured, unverified | twrp-common `qcom_decrypt` + `qcom_decrypt_fbe`, stock keymaster 4.0 / gatekeeper 1.0 / qseecomd blobs, FBE v2 props |
 | Haptics | configured, unverified | AW8697 firmware in ramdisk + vibrator HAL binaries |
 | U-Boot FIT packaging | configured | `scripts/make-fit.sh`, gzip kernel + live DT, recomputes `boot_twrp` blocks |
-| Build | **verified 2026-10-02** | `lunch twrp_crux-eng` + `mka recoveryimage` on the `cruxbuild` VM; kernel 4.14.357 from source with LLVM tools; see `BUILD-RESULTS-2026-10-02.md` |
+| Build | **verified 2026-10-02; rebuilt 2026-10-03** | `lunch twrp_crux-eng` + `mka recoveryimage` on the `cruxbuild` VM; kernel 4.14.357 from source with LLVM tools; see `BUILD-RESULTS-2026-10-02.md` and `BUILD-RESULTS-2026-10-03.md` |
 | Recovery on device | **not run for this adaptation** | the verified menu still boots the separate legacy TWRP 3.3.1 FIT |
 | Decryption on PE13 data | **not verified** | main functional risk |
 
 ## Open risks / questions
 
-1. **FIT size vs cache slot.** Resolved for this build: the gzip-kernel FIT is
-   44,398,928 B (`0x2a58` blocks) and leaves 22,177 KiB free in the 64 MiB TWRP
-   cache slot. Re-check after any ramdisk or kernel change.
+1. **FIT size vs cache slot.** Resolved for the 2026-10-02 build: the
+   gzip-kernel FIT was 44,398,928 B (`0x2a58` blocks). The 2026-10-03 pstore
+   rebuild is 44,413,240 B (`0x2a5c` blocks), leaving 22,163 KiB free in the
+   64 MiB TWRP cache slot. Re-check after any further ramdisk or kernel change.
 2. **Decryption of PE13 `/data`.** PE13 uses `fileencryption=ice` +
    metadata encryption (`dm-default-key`, options v2) with the nabu Android 12
    keymaster line. The ramdisk ships the stock crux keymaster 4.0/gatekeeper 1.0
@@ -59,8 +60,9 @@ separately booted the older TWRP 3.3.1 FIT from the verified U-Boot menu; see
 
 1. ~~Compile on the build host and fix any device-tree build errors.~~ Done
    2026-10-02; see `BUILD-RESULTS-2026-10-02.md`.
-2. Hand the new `boot_twrp` block count (`0x2a58`, was `0x3486`) and the FIT to
-   the U-Boot boot-menu session and prepare a cache payload copy.
+2. Hand the current `boot_twrp` block count (`0x2a5c`; was `0x2a58` for the
+   2026-10-02 build and `0x3486` for the legacy 3.3.1 FIT) and the FIT to the
+   U-Boot boot-menu session and prepare a cache payload copy.
 3. After the FIT handoff, obtain explicit authorization for the needed device operations and follow `docs/DEVICE-TEST.md` by phase.
 4. Iterate on decryption and display/touch if needed.
 5. Only later: evaluate `twrp-14.1` (`3.7.1_14`).

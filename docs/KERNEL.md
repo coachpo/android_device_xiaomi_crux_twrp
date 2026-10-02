@@ -22,10 +22,10 @@ checkout differs from the expected revision; it does not pin the commit:
          revision="thirteen-plus" clone-depth="1" />
 ```
 
-The expected revision is `b5ef11095c5389f937514d59da39c35cd244d971` (see
-`scripts/build-twrp.sh`); the branch can move and has since advanced (tip
-`c5afe30f211b` at the time of writing). That revision is the PE13 kernel used
-by the current workspace:
+The expected revision is `c5afe30f211bec03f1a9d10f90eac4a57e792818` (see
+`scripts/build-twrp.sh`); the branch can move, and `b5ef11095c53` was the
+revision used by the 2026-10-02 build. The expected revision is the PE13 kernel
+used by the current workspace:
 
 ```text
 Linux version 4.14.357-openela-Marisa-20260104-ksunext
@@ -65,26 +65,23 @@ TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 
 ## Optional TWRP kernel fragment
 
-The committed PE13 `crux_defconfig` contains everything recovery needs at the
-`b5ef1109` expected revision. Three options are absent from that revision and
-are **optional** for the first bring-up:
+The committed PE13 `crux_defconfig` contains everything recovery needs. Two
+options are absent and are **optional** for the first bring-up:
 
 | Option | Effect | Why it may be wanted |
 |---|---|---|
 | `CONFIG_SERIAL_MSM_GENI_CONSOLE=y` | kernel console on `ttyMSM0` | kernel logs over the U-Boot CDC-ACM console |
 | `CONFIG_DRM_FBDEV_EMULATION=y` | `/dev/fb0` | fallback if the TWRP DRM path misbehaves |
-| `CONFIG_PSTORE=y` + `CONFIG_PSTORE_RAM=y` | pstore/ramoops | crash logs survive reboot |
+
+(`CONFIG_PSTORE*` is already enabled since `debb0e0c4e50`.)
 
 To add them, place a fragment in the kernel repository at
 `arch/arm64/configs/crux_twrp_defconfig` and set
 `TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig`. This is deliberately
 not enabled yet: it modifies the shared PE13 kernel repository and the missing
-options do not block recovery. pstore was later committed on branch
-`thirteen-plus` (`debb0e0c4e50`) for the PE13 debug kernels, so a branch
-checkout now has it; the `b5ef1109` expected revision used by the 2026-10-02
-build does not. The worktree's hung-task/softlockup diagnostics remain
-uncommitted temporary changes — do not rely on that worktree for a reproducible
-TWRP build.
+options do not block recovery. The worktree's hung-task/softlockup diagnostics
+remain uncommitted temporary changes — do not rely on that worktree for a
+reproducible TWRP build.
 
 ## Verified kernel capabilities for TWRP
 
@@ -100,11 +97,11 @@ From the built PE13 `kernel.config`:
 - `CONFIG_INPUT_EVDEV=y`, `CONFIG_TOUCHSCREEN_ST_FTS_V521=y`, `CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y`
 - `CONFIG_FW_LOADER=y`, `CONFIG_RD_GZIP=y`, `CONFIG_RD_LZMA=y`, `CONFIG_RD_ZSTD=y`
 - Security: `CONFIG_SECURITY_SELINUX=y`
+- `CONFIG_PSTORE=y`, `CONFIG_PSTORE_CONSOLE=y`, `CONFIG_PSTORE_PMSG=y`, `CONFIG_PSTORE_RAM=y`, `CONFIG_PSTORE_ZLIB_COMPRESS=y` (crash logs; added by `debb0e0c4e50`)
 
-Absent from the `b5ef1109` expected revision and the archived `kernel.config`
-(see the fragment table): `SERIAL_MSM_GENI_CONSOLE`, `DRM_FBDEV_EMULATION`,
-`PSTORE`, `PSTORE_RAM`. `PSTORE*` has since been committed on `thirteen-plus`
-(`debb0e0c4e50`).
+Absent from the expected revision and the archived pre-pstore `kernel.config`
+(see the fragment table): `SERIAL_MSM_GENI_CONSOLE`, `DRM_FBDEV_EMULATION`.
+`PSTORE`/`PSTORE_RAM` are enabled since `debb0e0c4e50`.
 
 ## Modules
 
