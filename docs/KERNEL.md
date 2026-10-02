@@ -37,8 +37,10 @@ It chains CAF `msm-4.14` `LA.UM.9.1.r1-16400` + Android 4.14-stable
 matching PE13 artifacts are archived at `out/crux-kernel-2026-10-01/`; that
 archive is the pre-pstore build (`df7d3aaa…`, no `CONFIG_PSTORE*`). The PE13
 build worktree in the VM currently carries uncommitted diagnostic changes
-(pstore/hung-task/softlockup defconfig, KGSL GPU-probe code); those are not part
-of the pinned revision and are not the release kernel.
+(hung-task/softlockup defconfig lines, KGSL GPU-probe code, `kernel/sys.c`);
+those are not part of the pinned revision and are not the release kernel. (The
+branch tip has since gained pstore and selftest-cleanup commits beyond the pin —
+see the kernel log.)
 
 ## Toolchain
 
@@ -77,10 +79,12 @@ To add them, place a fragment in the kernel repository at
 `arch/arm64/configs/crux_twrp_defconfig` and set
 `TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig`. This is deliberately
 not enabled yet: it modifies the shared PE13 kernel repository and the missing
-options do not block recovery. The PE13 debug worktree's uncommitted defconfig
-already enables pstore and hung-task diagnostics, but that is a temporary PE13
-debugging variant, not the pinned configuration; do not rely on it for a
-reproducible TWRP build.
+options do not block recovery. pstore was later committed on branch
+`thirteen-plus` (`debb0e0c4e50`, after the pinned revision) for the PE13 debug
+kernels, so a TWRP build that intentionally moves past the pin can use it; the
+pinned `b5ef1109` checkout does not have it. The worktree's
+hung-task/softlockup diagnostics remain uncommitted temporary changes — do not
+rely on that worktree for a reproducible TWRP build.
 
 ## Verified kernel capabilities for TWRP
 
