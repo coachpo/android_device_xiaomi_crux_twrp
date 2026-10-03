@@ -48,10 +48,11 @@ Address contract used by the FIT:
 `0x34000` (64 MiB into the payload); `<blocks>` is the FIT size in 4096-byte
 blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes). The
 first TWRP 3.7.1 build (2026-10-02) was `0x2a58` blocks (44,398,928 bytes,
-see `BUILD-RESULTS-2026-10-02.md`); the 2026-10-03 pstore rebuild is
-`0x2a5c` blocks (44,413,240 bytes, see `BUILD-RESULTS-2026-10-03.md`). The
-boot menu environment must be updated to the block count of the FIT actually
-deployed.
+see `BUILD-RESULTS-2026-10-02.md`); the 2026-10-03 pstore rebuild was
+`0x2a5c` blocks (44,413,240 bytes, see `BUILD-RESULTS-2026-10-03.md`), and
+the final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
+(44,462,716 bytes, see `BUILD-RESULTS-2026-10-03B.md`). The boot menu
+environment must be updated to the block count of the FIT actually deployed.
 
 The PE payload currently is not a valid four-entry boot layout: `make-cache-payload.py`
 uses `pe-recovery-live.itb` as a fallback when `pe-rom.itb` is absent. That

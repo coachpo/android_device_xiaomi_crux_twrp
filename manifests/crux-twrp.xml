@@ -9,7 +9,7 @@
         repo sync
 
     The kernel project follows the thirteen-plus branch. The expected PE13
-    source revision is c5afe30f211bec03f1a9d10f90eac4a57e792818 (Linux
+    source revision is 50443f853589625100431e994f675f1b7087edec (Linux
     4.14.357-openela "Marisa"); scripts/build-twrp.sh only warns on mismatch.
     TWRP builds the kernel from source through vendor/twrp/build/tasks/kernel.mk.
 -->
@@ -26,8 +26,8 @@
              clone-depth="1" />
     <!--
         Expected source revision:
-        c5afe30f211bec03f1a9d10f90eac4a57e792818 (2026-10-03 branch tip:
-        pstore config debb0e0c4e50, selftest cleanup 02ac3777e4c7, gitignore
-        c5afe30f211b). scripts/build-twrp.sh warns if the checkout differs.
+        50443f853589625100431e994f675f1b7087edec (2026-10-03 branch tip:
+        cleaned crux series, pstore a4f1ffb00827, PE13 bring-up fixes).
+        scripts/build-twrp.sh warns if the checkout differs.
     -->
 </manifest>

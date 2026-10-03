@@ -7,7 +7,7 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `c5afe30f211bec03f1a9d10f90eac4a57e792818` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
+| Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `50443f853589625100431e994f675f1b7087edec` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
 | Status | **Code-level adaptation complete; host build verified 2026-10-02, rebuilt 2026-10-03 with the pstore kernel; not device-verified** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`, `docs/BUILD-RESULTS-2026-10-03.md`) |
 
@@ -96,11 +96,14 @@ with the kernel built from source. Artifacts are archived in the workspace at
   KiB free in the 64 MiB TWRP cache slot.
 - Full report and the build fixes: `docs/BUILD-RESULTS-2026-10-02.md`.
 
-## Rebuild (2026-10-03)
+## Rebuilds (2026-10-03)
 
-Rebuilt with the kernel synced to the `thirteen-plus` branch tip (pstore
-enabled, `c5afe30f211b`). The FIT is 44,413,240 B / `0x2a5c` blocks, SHA-256
-`5a731a98…`; see `docs/BUILD-RESULTS-2026-10-03.md`. Not device-tested.
+Rebuilt twice after the kernel history cleanup. The first rebuild (pstore
+kernel) produced a 44,413,240 B / `0x2a5c` FIT (`5a731a98…`, see
+`docs/BUILD-RESULTS-2026-10-03.md`); the final rebuild used the branch tip
+`50443f853589` with the PE13 fixes and produced a 44,462,716 B / `0x2a68` FIT
+(SHA-256 `12c7c985…`, see `docs/BUILD-RESULTS-2026-10-03B.md`). Not
+device-tested.
 
 ## Why twrp-12.1 and not a newer branch
 

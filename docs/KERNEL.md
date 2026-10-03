@@ -22,10 +22,11 @@ checkout differs from the expected revision; it does not pin the commit:
          revision="thirteen-plus" clone-depth="1" />
 ```
 
-The expected revision is `c5afe30f211bec03f1a9d10f90eac4a57e792818` (see
+The expected revision is `50443f853589625100431e994f675f1b7087edec` (see
 `scripts/build-twrp.sh`); the branch can move, and `b5ef11095c53` was the
-revision used by the 2026-10-02 build. The expected revision is the PE13 kernel
-used by the current workspace:
+revision used by the 2026-10-02 build (rewritten on 2026-10-03; its content is
+now reachable as `1ba66f41c50c`). The expected revision is the PE13 kernel used
+by the current workspace:
 
 ```text
 Linux version 4.14.357-openela-Marisa-20260104-ksunext
@@ -36,11 +37,10 @@ It chains CAF `msm-4.14` `LA.UM.9.1.r1-16400` + Android 4.14-stable
 (`crux: align boot, touch and FOD interfaces with Android 13`, etc.). The
 matching PE13 artifacts are archived at `out/crux-kernel-2026-10-01/`; that
 archive is the pre-pstore build (`df7d3aaa…`, no `CONFIG_PSTORE*`). The PE13
-build worktree in the VM currently carries uncommitted diagnostic changes
-(hung-task/softlockup defconfig lines, KGSL GPU-probe code, `kernel/sys.c`);
-those are not part of the expected revision and are not the release kernel.
-(The branch tip has since gained pstore and selftest-cleanup commits — see the
-kernel log.)
+build worktree in the VM currently carries only the uncommitted
+hung-task/softlockup defconfig lines; the PE13 bring-up fixes (KGSL GMU lookup,
+IPA probe defer, BPF 18-argument support, ftrace/BPF config, real uname, PCIe
+MSI cells) are committed on the branch.
 
 ## Toolchain
 
@@ -73,7 +73,7 @@ options are absent and are **optional** for the first bring-up:
 | `CONFIG_SERIAL_MSM_GENI_CONSOLE=y` | kernel console on `ttyMSM0` | kernel logs over the U-Boot CDC-ACM console |
 | `CONFIG_DRM_FBDEV_EMULATION=y` | `/dev/fb0` | fallback if the TWRP DRM path misbehaves |
 
-(`CONFIG_PSTORE*` is already enabled since `debb0e0c4e50`.)
+(`CONFIG_PSTORE*` is already enabled since `a4f1ffb00827`.)
 
 To add them, place a fragment in the kernel repository at
 `arch/arm64/configs/crux_twrp_defconfig` and set
@@ -97,11 +97,11 @@ From the built PE13 `kernel.config`:
 - `CONFIG_INPUT_EVDEV=y`, `CONFIG_TOUCHSCREEN_ST_FTS_V521=y`, `CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y`
 - `CONFIG_FW_LOADER=y`, `CONFIG_RD_GZIP=y`, `CONFIG_RD_LZMA=y`, `CONFIG_RD_ZSTD=y`
 - Security: `CONFIG_SECURITY_SELINUX=y`
-- `CONFIG_PSTORE=y`, `CONFIG_PSTORE_CONSOLE=y`, `CONFIG_PSTORE_PMSG=y`, `CONFIG_PSTORE_RAM=y`, `CONFIG_PSTORE_ZLIB_COMPRESS=y` (crash logs; added by `debb0e0c4e50`)
+- `CONFIG_PSTORE=y`, `CONFIG_PSTORE_CONSOLE=y`, `CONFIG_PSTORE_PMSG=y`, `CONFIG_PSTORE_RAM=y`, `CONFIG_PSTORE_ZLIB_COMPRESS=y` (crash logs; added by `a4f1ffb00827`)
 
 Absent from the expected revision and the archived pre-pstore `kernel.config`
 (see the fragment table): `SERIAL_MSM_GENI_CONSOLE`, `DRM_FBDEV_EMULATION`.
-`PSTORE`/`PSTORE_RAM` are enabled since `debb0e0c4e50`.
+`PSTORE`/`PSTORE_RAM` are enabled since `a4f1ffb00827`.
 
 ## Modules
 

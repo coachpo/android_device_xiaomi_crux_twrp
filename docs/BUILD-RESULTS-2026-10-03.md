@@ -1,5 +1,10 @@
 # Build results — 2026-10-03
 
+> The kernel revision used by this build (`c5afe30f211b`) was rewritten on
+> 2026-10-03; its content is now reachable as `1ba66f41c50c` in the cleaned
+> history, and a second rebuild with the PE13 kernel fixes is recorded in
+> [`BUILD-RESULTS-2026-10-03B.md`](BUILD-RESULTS-2026-10-03B.md).
+
 Rebuild of the Crux TWRP 3.7.1 recovery on the OrbStack `cruxbuild` VM after
 the kernel was synced to the `thirteen-plus` branch tip (pstore enabled).
 
