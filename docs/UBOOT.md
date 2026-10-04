@@ -10,14 +10,27 @@ Every Android/recovery entry is started by the U-Boot boot menu. There is no
 direct ABL -> recovery path in use, and the `recovery` partition is not the
 normal boot source for TWRP on this setup.
 
-The last hardware-verified menu boots MIUI and the legacy TWRP 3.3.1 FIT. The
-TWRP 3.7.1 adaptation in this repository has been host-built (2026-10-02) but
-not integrated or device-tested; see [`STATUS.md`](STATUS.md) and the workspace
-[`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
+The older MIUI/TWRP 3.3.1 chainload is hardware-verified. As of 2026-10-04,
+the TWRP 3.7.1 Cepheus-baseline FIT is integrated into cache and the menu,
+but its userspace boot remains unverified. The deployed watchdog menu reads
+the fixed2 FIT with `0x293c` blocks. Current kernel debug boots must follow
+the [watchdog recovery guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md);
+the [watchdog image evidence](../../out/crux-uboot-watchdog-2026-10-04/README.md)
+records automatic recovery and its diagnostic-only parameters.
 
-## Verified menu and candidate layout
+Use a checked `run boot_go` handoff or explicitly arm and check the timer
+immediately before a direct debug `bootm go`. Unattended diagnosis also needs
+the two kernel parameters set before prep; a menu entry alone does not stop
+Linux from taking over and feeding the watchdog. Generated FIT commands are
+handoff material for the U-Boot integration owner, who applies that gate.
+
+## Historical menu and layout evidence
 
 Source: `u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env`.
+
+The legacy commands and source-state descriptions below preserve the earlier
+integration evidence. They are not current watchdog-protected debug recipes;
+use the guide above and the block count of the FIT actually deployed.
 
 The hardware-verified `ub-crux-bootmenu.img` and cache payload contain only
 the MIUI and TWRP FITs below. The source checkout now also has uncommitted PE

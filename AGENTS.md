@@ -15,5 +15,6 @@
 
 ## Device tests
 
+- Hand off the watchdog recovery requirement with every debug FIT: the U-Boot integration owner must follow [`the workspace watchdog guide`](../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md) before kernel entry, including diagnostic bootargs where unattended recovery is required. A generated command ending in bare `bootm go` does not establish that protection. This requirement does not authorize phone/cache writes or move device-operation ownership into this checkout.
 - `docs/DEVICE-TEST.md` contains both read-only checks and storage-changing operations. Separate them. Obtaining a new FIT on device may require an explicitly authorized cache write; wiping/formating `/data` or flashing partitions requires explicit authorization for that operation and a verified target/image.
 - Record the artifact, source revision, boot arguments and observed result. A successful build or FIT packaging step is not evidence of a successful device boot.
