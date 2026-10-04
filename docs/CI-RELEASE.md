@@ -23,6 +23,9 @@ fresh tag, or remove that failed draft before explicitly reusing its tag.
 ## Build inputs
 
 - Ubuntu 22.04 x86_64 hosted runner, matching the verified local build OS.
+- Short source path `/tmp/twrp`: the legacy QCACLD compiler command repeats
+  absolute include paths, so the default long GitHub workspace path can
+  exceed Linux's single-command argument limit.
 - TWRP minimal manifest branch `twrp-12.1`.
 - Device files from the exact triggering checkout, copied from this
   repository's `device/xiaomi/crux` leaf directory.
