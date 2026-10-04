@@ -1,5 +1,11 @@
 # Build results — 2026-10-04 (Cepheus 4.14.305 baseline)
 
+Historical first-build/integration record. The failure and open items below
+are observations from that run, not current status. The later e45a24 Image
+boots TWRP with two DT compatibility repairs; current inputs, successful
+RAM boot and pending persistent deployment are recorded in
+[`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md).
+
 Rebuild of the Crux TWRP 3.7.1 recovery with the migrated PE Cepheus kernel
 baseline (`crux-pe13-cepheus` @ `b38f5a5c8cac`, Linux 4.14.305), the Prelude
 clang 16 toolchain, and the device integration of the resulting FIT.

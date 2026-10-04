@@ -7,13 +7,13 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `crux-pe13-cepheus`; expected revision `b38f5a5c8cacddaa2e547c466876d22528e1c7e5` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. |
+| Kernel | `kernel/xiaomi/crux` from branch `crux-pe13-cepheus`; expected revision `e45a24f31ee0d48edba0cc164063c3a631589e31` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
-| Status | **Code-level adaptation complete; host build verified 2026-10-02, rebuilt 2026-10-03, and moved to the PE Cepheus 4.14.305 kernel baseline 2026-10-04; integrated into the U-Boot menu, but the Cepheus kernel stops after `Starting kernel` on device (early-boot issue)** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`, `docs/BUILD-RESULTS-2026-10-03.md`, `docs/BUILD-RESULTS-2026-10-03B.md`, `docs/BUILD-RESULTS-2026-10-04.md`) |
+| Status | **Device-verified via the normal U-Boot menu on 2026-10-04:** corrected cache deployed with explicit authorization, full-cache readback matches, PE Cepheus 4.14.305, TWRP 3.7.1 UI/ADB, eight CPUs and normal watchdog takeover. See `docs/BUILD-RESULTS-2026-10-04-DT.md`. |
 
-The last hardware-verified menu boots the older TWRP 3.3.1 from cache; the
-new 3.7.1 adaptation in this repository was host-built on 2026-10-02 but has
-not been integrated into the U-Boot menu or device-tested.
+The new PE-baseline TWRP has booted on the device with the DT compatibility
+corrections described in the current result record. The corrected cache slot is deployed and verified by an ordinary menu boot;
+the phone currently remains in TWRP.
 U-Boot source and payload ownership is in `u-boot-port/`. This repository
 produces the FIT and its exact `boot_twrp` command for integration; it does not
 change the U-Boot checkout, flash cache or operate the device. See
@@ -25,7 +25,7 @@ change the U-Boot checkout, flash cache or operate the device. See
 device/xiaomi/crux/          TWRP device tree (BoardConfig, product, recovery root)
   prebuilt/live-dt/          ABL live device tree used by the proven TWRP FIT
   recovery/root/             init scripts, fstab, twrp.flags, stock crypto blobs
-manifests/crux-twrp.xml      repo local manifest (device tree + kernel source)
+manifests/crux-twrp.xml      repo local manifest (device + kernel + pinned Prelude)
 scripts/setup-twrp.sh        repo init/sync a TWRP 12.1 tree
 scripts/build-twrp.sh        lunch twrp_crux-eng && mka recoveryimage
 scripts/make-fit.sh          package recovery.img pieces into twrp-crux.itb
@@ -75,6 +75,28 @@ TARGET_PREBUILT_KERNEL="$PWD/../out/crux-kernel-2026-10-01/Image" \
 TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 ```
 
+## GitHub Actions builds and releases
+
+Run **Actions → TWRP Recovery for crux → Run workflow** on `main` to build
+and publish a GitHub Release. Leave `release_tag` empty for a unique tag, or
+supply a new tag. Pushing a `twrp-crux-*` tag also triggers the workflow.
+
+The workflow builds the PE Cepheus Crux kernel and recovery from source on
+Ubuntu 22.04, using the same pinned Prelude Clang 16.0.2 revision as the
+verified local build. It includes the corrected live DT and the optional
+80px top display inset. Release assets contain the Android recovery image,
+U-Boot FIT, gzip ramdisk, resolved source manifest, build metadata, SHA-256
+checksums and exact watchdog-protected menu command. Build logs are retained
+as workflow artifacts, and release assets receive signed GitHub build provenance.
+The TWRP version credits `coachpo`; full GitHub/source URLs are embedded in
+`/system/etc/crux-release.txt` and included in `CREDITS.txt`. See
+[`docs/CI-RELEASE.md`](docs/CI-RELEASE.md) and
+[`official practice comparison`](docs/OFFICIAL-PRACTICES.md).
+
+The workflow packages TWRP; device cache integration and hardware flashing
+remain separate operations. A newly compiled release is not automatically
+hardware-tested.
+
 ## Verified build (2026-10-02)
 
 `lunch twrp_crux-eng && mka recoveryimage` completed on the `cruxbuild` VM
@@ -119,8 +141,8 @@ On 2026-10-04 the FIT was written to the TWRP cache slot and the U-Boot
 `boot_twrp` command updated (new block count, `fdt_high`/`initrd_high` unset);
 the menu entry boots the FIT, but the Cepheus kernel stops after
 `Starting kernel` without re-enumerating USB/ADB — the same early-boot hang as
-the new-baseline PE recovery candidate. TWRP cannot reach userspace until that
-kernel issue is fixed.
+the new-baseline PE recovery candidate. That initial failure is superseded by the DT correction and successful
+2026-10-04 device boot in [`BUILD-RESULTS-2026-10-04-DT.md`](docs/BUILD-RESULTS-2026-10-04-DT.md).
 
 ## Why twrp-12.1 and not a newer branch
 

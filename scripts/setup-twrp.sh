@@ -11,8 +11,9 @@
 # Environment:
 #   TWRP_BRANCH    TWRP minimal-manifest branch       (default: twrp-12.1)
 #   TWRP_JOBS      repo sync parallelism              (default: nproc)
-#   LOCAL_DEVICE   Path to a local device tree checkout. When set, the device
-#                  project is not fetched from GitHub; a symlink is created at
+#   LOCAL_DEVICE   Absolute path to the device/xiaomi/crux leaf directory.
+#                  When set, the device
+#                  project is not fetched from GitHub; files are copied to
 #                  device/xiaomi/crux instead (useful while developing this
 #                  repository in place).
 #
@@ -36,6 +37,7 @@ JOBS="${TWRP_JOBS:-$JOBS}"
 
 mkdir -p "$TREE"
 cd "$TREE"
+TREE="$PWD"
 
 echo "==> repo init ($TWRP_BRANCH)"
 repo init --depth=1 \
@@ -45,37 +47,37 @@ repo init --depth=1 \
 MANIFEST_DIR="$TREE/.repo/local_manifests"
 mkdir -p "$MANIFEST_DIR"
 
+cp "$REPO_ROOT/manifests/crux-twrp.xml" "$MANIFEST_DIR/crux-twrp.xml"
 if [ -n "$LOCAL_DEVICE" ]; then
     echo "==> using local device tree: $LOCAL_DEVICE"
-    cat > "$MANIFEST_DIR/crux-twrp.xml" <<'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-    <project name="coachpo/kernel_xiaomi_crux"
-             path="kernel/xiaomi/crux"
-             remote="github"
-             revision="crux-pe13-cepheus"
-             clone-depth="1" />
-</manifest>
-EOF
+    python3 - "$MANIFEST_DIR/crux-twrp.xml" <<'PY_MANIFEST'
+import sys
+import xml.etree.ElementTree as ET
+path = sys.argv[1]
+tree = ET.parse(path)
+for project in list(tree.getroot().findall("project")):
+    if project.get("name") == "coachpo/android_device_xiaomi_crux_twrp":
+        tree.getroot().remove(project)
+tree.write(path, encoding="utf-8", xml_declaration=True)
+PY_MANIFEST
 else
     echo "==> using device tree from GitHub (coachpo/android_device_xiaomi_crux_twrp)"
-    cp "$REPO_ROOT/manifests/crux-twrp.xml" "$MANIFEST_DIR/crux-twrp.xml"
 fi
 
 echo "==> repo sync (-j$JOBS, this downloads the TWRP 12.1 tree)"
 repo sync -c --no-clone-bundle --no-tags -j"$JOBS"
 
-if [ -n "$LOCAL_DEVICE" ]; then
-    # The AOSP product scan does not follow symlinked device directories, so
-    # copy the tree instead of linking it. build-twrp.sh refreshes the copy
-    # on every build when LOCAL_DEVICE is set.
-    mkdir -p "$TREE/device/xiaomi"
-    rm -rf "$TREE/device/xiaomi/crux"
-    cp -a "$LOCAL_DEVICE" "$TREE/device/xiaomi/crux"
-    echo "==> copied $LOCAL_DEVICE -> $TREE/device/xiaomi/crux"
-fi
+# The repository includes scripts/docs above device/xiaomi/crux. AOSP needs
+# the leaf device directory, not the repository root or a symlink to it.
+DEVICE_SOURCE="${LOCAL_DEVICE:-$TREE/crux-device-source/device/xiaomi/crux}"
+[ -f "$DEVICE_SOURCE/BoardConfig.mk" ] || {
+    echo "error: device source has no BoardConfig.mk: $DEVICE_SOURCE" >&2
+    exit 1
+}
+mkdir -p "$TREE/device/xiaomi/crux"
+rsync -a --delete "$DEVICE_SOURCE/" "$TREE/device/xiaomi/crux/"
+echo "==> copied $DEVICE_SOURCE -> $TREE/device/xiaomi/crux"
 
 echo
 echo "Done. Next:"
-echo "  cd $TREE"
-echo "  scripts/build-twrp.sh ."
+echo "  \"$REPO_ROOT/scripts/build-twrp.sh\" \"$TREE\""

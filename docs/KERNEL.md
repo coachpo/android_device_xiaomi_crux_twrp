@@ -23,22 +23,24 @@ the checkout differs from the expected revision; it does not pin the commit:
          revision="crux-pe13-cepheus" clone-depth="1" />
 ```
 
-The expected revision is `b38f5a5c8cacddaa2e547c466876d22528e1c7e5` (see
+The expected revision is `e45a24f31ee0d48edba0cc164063c3a631589e31` (see
 `scripts/build-twrp.sh`). The branch is the PE13 Cepheus baseline migration:
 
 ```text
-Linux version 4.14.305-Crux-PE-gb38f5a5c8cac
+Linux version 4.14.305-Crux-PE-ge45a24f31ee0
 ```
 
 It is the official PE Cepheus source
 (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`, branch
-`thirteen`, Linux 4.14.305) plus the 15 Crux migration commits and the
-first-Hibern8 UFS trace commit. The migration record, patch set and Git bundle
+`thirteen`, Linux 4.14.305) plus the Crux migration and early-boot memory-limit fixes. The verified
+Image is unchanged by the current DT-only repair; see
+[`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The migration record, patch set and Git bundle
 are in [`../../out/crux-kernel-cepheus-2026-10-03/`](../../out/crux-kernel-cepheus-2026-10-03/README.md);
 the legacy archive of the old tree is in
 [`../../out/crux-kernel-legacy-archive-2026-10-03/`](../../out/crux-kernel-legacy-archive-2026-10-03/README.md).
-Until the branch is published, fetch it locally from the migration bundle
-instead of `repo sync`:
+For an offline build or a recorded revision unavailable from the moving remote
+branch, fetch the matching migration bundle locally. Verify its contents and
+selected commit; a previous branch publication does not prove the current tip:
 
 ```sh
 git -C kernel/xiaomi/crux fetch /path/to/crux-pe13-cepheus.bundle \
@@ -76,6 +78,14 @@ in this repository: the build tree needs
 `prebuilts/clang/host/linux-x86/clang-prelude`, either a copy or a symlink to
 the PE13 tree
 (`~/crux-pe13-offline-2026-09-25/pe13/prebuilts/clang/host/linux-x86/clang-prelude`).
+The setup manifest now fetches this toolchain from
+`https://gitlab.com/jjpprrrr/prelude-clang.git` at
+`ac8fce34dc0f6918672100d7a6e867a66b8afa8f`, the actual local compiler revision.
+`scripts/build-twrp.sh` also applies the repository's board DT patch before
+building: it disables the unused USB1 extcon that conflicts with SMB5. The
+patch is idempotent on the local corrected tree. Its SHA-256 is included in
+release metadata; the kernel branch remains the PE migration branch.
+
 TWRP's `kernel.mk` still passes `CROSS_COMPILE_ARM32` (AOSP arm binutils) and
 hardcodes `HOSTCC`/`HOSTCXX` to the tree's clang 12 for host utilities; target
 compilation and the LLVM binutils come from Prelude. `LD_COMPAT` is set
@@ -97,7 +107,7 @@ options are absent and are **optional** for the first bring-up:
 
 | Option | Effect | Why it may be wanted |
 |---|---|---|
-| `CONFIG_SERIAL_MSM_GENI_CONSOLE=y` | kernel console on `ttyMSM0` | kernel logs over the U-Boot CDC-ACM console |
+| `CONFIG_SERIAL_MSM_GENI_CONSOLE=y` | kernel console on `ttyMSM0` | kernel UART console logs (CDC-ACM is a separate U-Boot console) |
 | `CONFIG_DRM_FBDEV_EMULATION=y` | `/dev/fb0` | fallback if the TWRP DRM path misbehaves |
 
 (`CONFIG_PSTORE*` is already enabled in the Cepheus `crux_defconfig`.)
@@ -106,8 +116,8 @@ To add them, place a fragment in the kernel repository at
 `arch/arm64/configs/crux_twrp_defconfig` and set
 `TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig`. This is deliberately
 not enabled yet: it modifies the shared PE13 kernel repository and the missing
-options do not block recovery. The Cepheus tree's worktree is expected to be
-clean (`b38f5a5c8cac`); the Crux hung-task/softlockup diagnostics that used to
+options do not block recovery. The verified Image was built at `e45a24f31ee0`; the Crux source DT now
+has an uncommitted board correction disabling the unused USB1 GPIO extcon; the Crux hung-task/softlockup diagnostics that used to
 be uncommitted on the old tree are part of the migration commits here.
 
 ## Verified kernel capabilities for TWRP

@@ -1,0 +1,10 @@
+Crux TWRP Recovery
+
+Crux port maintainer: coachpo
+GitHub: https://github.com/coachpo
+Repository: https://github.com/coachpo/android_device_xiaomi_crux_twrp
+Kernel: https://github.com/coachpo/kernel_xiaomi_crux/tree/crux-pe13-cepheus
+
+TWRP upstream: Team Win Recovery Project (https://twrp.me)
+Kernel baseline: PixelExperience official Cepheus 4.14.305, adapted for crux
+Stock vendor component credits and licenses: see the repository NOTICE

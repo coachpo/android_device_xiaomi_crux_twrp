@@ -17,6 +17,7 @@
 #
 set -eo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TREE="${1:-$PWD/twrp-12.1}"
 shift || true
 
@@ -26,6 +27,7 @@ if [ ! -d "$TREE" ]; then
 fi
 
 cd "$TREE"
+TREE="$PWD"
 
 if [ ! -f build/envsetup.sh ]; then
     echo "error: '$TREE' does not look like an Android build tree" >&2
@@ -44,7 +46,7 @@ if [ -n "${LOCAL_DEVICE:-}" ]; then
     fi
 fi
 
-EXPECTED_KERNEL_SHA="b38f5a5c8cacddaa2e547c466876d22528e1c7e5"
+EXPECTED_KERNEL_SHA="e45a24f31ee0d48edba0cc164063c3a631589e31"
 if [ -d kernel/xiaomi/crux/.git ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
     if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then
@@ -52,6 +54,8 @@ if [ -d kernel/xiaomi/crux/.git ]; then
         echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.305 Cepheus baseline)" >&2
     fi
 fi
+
+"$REPO_ROOT/scripts/apply-kernel-patches.sh" "$TREE/kernel/xiaomi/crux"
 
 export ALLOW_MISSING_DEPENDENCIES=true
 export LC_ALL=C

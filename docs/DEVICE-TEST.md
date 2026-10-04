@@ -1,8 +1,19 @@
 # On-device validation plan
 
-The TWRP 3.7.1 adaptation in this repository has been host-built (2026-10-02) but not device-tested. The last hardware-verified menu booted the separate TWRP 3.3.1 FIT; the latest recorded hardware status is in [`HANDOFF-NEXT-2026-10-02.md`](../../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
+TWRP 3.7.1 on the PE Cepheus 4.14.305 Crux kernel has passed a device startup
+check through U-Boot with corrected RAM DT: UI confirmed by the user, ADB,
+all eight CPUs, UFS enumeration and normal watchdog takeover. See
+[`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md).
+The corrected cache is now deployed with explicit authorization; full readback
+and ordinary menu boot passed. ADB appeared at 11.3 seconds and the user again
+confirmed TWRP UI.
 
-This is a test plan, not a record of completed checks. Build and package the FIT before the boot phase. Building is host-side; integrating a new FIT may require a cache-payload write owned by the U-Boot project, which needs explicit authorization.
+The remaining phases below are a test plan, not completed functional checks.
+Touch interaction, MTP, haptics, recovery operations and full userdata decryption
+have not been validated. Cache is a raw FIT payload container on this setup;
+its mount failure must not be addressed by wiping or formatting it. Device
+storage writes remain owned by the U-Boot integration task and need explicit
+authorization for the specific operation.
 
 ## Host-side gate
 

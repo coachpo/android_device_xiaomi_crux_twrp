@@ -10,26 +10,34 @@
 
     The kernel project follows the crux-pe13-cepheus branch (the PE13 Cepheus
     baseline migration; Linux 4.14.305). The expected source revision is
-    b38f5a5c8cacddaa2e547c466876d22528e1c7e5; scripts/build-twrp.sh only warns
+    e45a24f31ee0d48edba0cc164063c3a631589e31; scripts/build-twrp.sh only warns
     on mismatch. TWRP builds the kernel from source through
     vendor/twrp/build/tasks/kernel.mk.
 -->
 <manifest>
+    <remote name="crux-github" fetch="https://github.com/" />
+    <remote name="crux-gitlab" fetch="https://gitlab.com/" />
     <project name="coachpo/android_device_xiaomi_crux_twrp"
-             path="device/xiaomi/crux"
-             remote="github"
+             path="crux-device-source"
+             remote="crux-github"
              revision="main" />
 
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
-             remote="github"
+             remote="crux-github"
              revision="crux-pe13-cepheus"
              clone-depth="1" />
     <!--
         Expected source revision:
-        b38f5a5c8cacddaa2e547c466876d22528e1c7e5 (2026-10-04 branch tip:
+        e45a24f31ee0d48edba0cc164063c3a631589e31 (2026-10-04 branch tip:
         PE official Cepheus base f4048f154b51, Linux 4.14.305, the 15
-        migration commits and the first-Hibern8 UFS trace).
+        migration commits, the first-Hibern8 UFS trace and early-boot memory-limit fixes).
         scripts/build-twrp.sh warns if the checkout differs.
     -->
+    <!-- Same Prelude Clang 16.0.2 revision as the verified local PE/TWRP build. -->
+    <project name="jjpprrrr/prelude-clang"
+             path="prebuilts/clang/host/linux-x86/clang-prelude"
+             remote="crux-gitlab"
+             revision="ac8fce34dc0f6918672100d7a6e867a66b8afa8f"
+             clone-depth="1" />
 </manifest>

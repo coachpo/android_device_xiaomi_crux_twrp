@@ -1,0 +1,134 @@
+name: TWRP Recovery for crux
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (empty generates a unique twrp-crux tag)'
+        required: false
+        type: string
+  push:
+    tags:
+      - 'twrp-crux-*'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: twrp-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    env:
+      TWRP_TREE: ${{ github.workspace }}/twrp-12.1
+      LOCAL_DEVICE: ${{ github.workspace }}/device/xiaomi/crux
+      TWRP_BRANCH: twrp-12.1
+      TWRP_JOBS: '4'
+      USE_CCACHE: '1'
+      CCACHE_EXEC: /usr/bin/ccache
+      TZ: Asia/Shanghai
+    steps:
+      - name: Check out the release sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Select release tag
+        env:
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$REQUESTED_TAG"
+          if [ "$EVENT_NAME" = push ]; then
+            tag="$REF_NAME"
+          elif [ -z "$tag" ]; then
+            tag="twrp-crux-3.7.1_12-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          fi
+          git check-ref-format "refs/tags/$tag"
+          existing_ref="$(git ls-remote --tags origin "refs/tags/$tag")"
+          if [ -n "$existing_ref" ]; then
+            git fetch --no-tags --depth=1 origin "refs/tags/$tag"
+            tag_commit="$(git rev-parse 'FETCH_HEAD^{commit}')"
+            if [ "$tag_commit" != "$GITHUB_SHA" ]; then
+              echo "Tag $tag points to $tag_commit, not the checked-out $GITHUB_SHA." >&2
+              exit 1
+            fi
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists: $tag; use a new release tag." >&2
+            exit 1
+          fi
+          echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          mkdir -p dist logs
+
+      - name: Prepare Ubuntu build tools and disk space
+        run: |
+          # This fresh hosted runner does not need the preinstalled mobile/.NET stacks.
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+            /usr/local/.ghcup /opt/hostedtoolcache /usr/local/share/boost
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex gperf \
+            git lib32ncurses-dev lib32z1-dev libelf-dev liblz4-tool libncurses5 \
+            libssl-dev libxml2-utils lzop python3 rsync unzip zip \
+            device-tree-compiler u-boot-tools
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl --fail --location --retry 3 \
+            https://storage.googleapis.com/git-repo-downloads/repo \
+            --output "$RUNNER_TEMP/bin/repo"
+          chmod +x "$RUNNER_TEMP/bin/repo"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
+          ccache --max-size 5G
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Sync TWRP, PE Crux kernel and pinned Prelude Clang
+        run: scripts/setup-twrp.sh "$TWRP_TREE" 2>&1 | tee logs/sync.log
+
+      - name: Build recovery from source
+        run: scripts/build-twrp.sh "$TWRP_TREE" 2>&1 | tee logs/build.log
+
+      - name: Package and verify release assets
+        run: |
+          scripts/package-release.py --tree "$TWRP_TREE" --out dist \
+            --release-tag "$RELEASE_TAG"
+          (cd dist && sha256sum --check SHA256SUMS)
+
+      - name: Upload release assets as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: twrp-crux-${{ github.run_id }}
+          path: dist/
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Sign build provenance for release assets
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: dist/*
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" --draft --target "$GITHUB_SHA" \
+            --title "TWRP 3.7.1_12 for crux ($RELEASE_TAG)" \
+            --notes-file dist/RELEASE-NOTES.md
+          gh release upload "$RELEASE_TAG" dist/*
+          gh release edit "$RELEASE_TAG" --draft=false
+          gh release view "$RELEASE_TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve build logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: twrp-crux-logs-${{ github.run_id }}
+          path: logs/
+          if-no-files-found: warn

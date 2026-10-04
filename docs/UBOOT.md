@@ -10,13 +10,13 @@ Every Android/recovery entry is started by the U-Boot boot menu. There is no
 direct ABL -> recovery path in use, and the `recovery` partition is not the
 normal boot source for TWRP on this setup.
 
-The older MIUI/TWRP 3.3.1 chainload is hardware-verified. As of 2026-10-04,
-the TWRP 3.7.1 Cepheus-baseline FIT is integrated into cache and the menu,
-but its userspace boot remains unverified. The deployed watchdog menu reads
-the fixed2 FIT with `0x293c` blocks. Current kernel debug boots must follow
-the [watchdog recovery guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md);
-the [watchdog image evidence](../../out/crux-uboot-watchdog-2026-10-04/README.md)
-records automatic recovery and its diagnostic-only parameters.
+The PE Cepheus 4.14.305 TWRP 3.7.1 has booted through the deployed U-Boot
+with the corrected RAM DT: UI/ADB, all eight CPUs and normal Linux watchdog
+ownership. See [the current DT result](BUILD-RESULTS-2026-10-04-DT.md).
+The corrected cache has since been deployed with explicit authorization;
+full-cache readback and ordinary menu boot passed, with ADB at 11.3 seconds
+and the user confirming TWRP UI. The FIT fits the existing `0x293c` blocks.
+Current debug boots follow the [watchdog recovery guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md).
 
 Use a checked `run boot_go` handoff or explicitly arm and check the timer
 immediately before a direct debug `bootm go`. Unattended diagnosis also needs
@@ -68,18 +68,11 @@ final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
 Cepheus-baseline build is `0x2935` blocks (43,204,672 bytes, see
 `BUILD-RESULTS-2026-10-04.md`). The boot menu
 environment must be updated to the block count of the FIT actually deployed.
-Since 2026-10-04 the deployed FIT is the Cepheus-baseline one at LBA `0x34000`
-(`boot_twrp` in `board/qualcomm/xiaomi-crux.env`), and the menu entry boots it;
-the Cepheus kernel currently stops after `Starting kernel` (early-boot issue
-tracked by the PE13 records), so the adaptation is integrated but not
-userspace-verified.
-
-The PE payload currently is not a valid four-entry boot layout: `make-cache-payload.py`
-uses `pe-recovery-live.itb` as a fallback when `pe-rom.itb` is absent. That
-diagnostic FIT is 61,761,340 bytes (about `0x3b00` blocks), while the candidate
-`boot_pe_rom` command reads only `0x3100` blocks. The candidate ROM read would
-truncate the FIT. Do not use or describe the PE ROM entry as bootable until the
-system FIT exists and its slot, size, checksums and read length agree.
+Those descriptions refer to dated payloads and are superseded by the current
+four-slot cache layout. The deployed fixed2 TWRP FIT uses `0x293c` blocks;
+its corrected DT replacement keeps that count. The current cache backup and
+replacement record preserve MIUI, TWRP, PE recovery and PE ROM as separate
+64 MiB slots; see the current DT result and workspace handoff D.
 
 ## What this repository produces
 
@@ -90,8 +83,8 @@ system FIT exists and its slot, size, checksums and read length agree.
   so the image stays inside the 64 MiB TWRP cache slot;
 - ramdisk: `ramdisk-recovery.img` (gzip) with `compression = "none"` — the
   kernel unpacks the initramfs itself (`CONFIG_RD_GZIP=y`);
-- fdt: `device/xiaomi/crux/prebuilt/live-dt/twrp-live.dtb`, the ABL live DT that
-  the currently-working TWRP FIT uses.
+- fdt: `device/xiaomi/crux/prebuilt/live-dt/twrp-live.dtb`, the captured ABL live DT with the
+  UFS ICE resource and unused USB1 extcon compatibility corrections.
 
 The script prints the exact replacement for `boot_twrp`, recomputed for the
 new FIT size, plus SHA-256 and block count. Since 2026-10-04 the replacement
@@ -124,8 +117,10 @@ authorized, writes the payload.
 ## Live device tree
 
 `prebuilt/live-dt/twrp-live.dtb` was captured from the ABL/U-Boot live DT used
-by the proven TWRP 3.3.1 boot (SHA-256
-`9744b16db18c12e8b084c5a30c3c70e94263c7ddbd20613736b9a299c442f03d`). It
+by the proven TWRP 3.3.1 boot (original SHA-256
+`9744b16db18c12e8b084c5a30c3c70e94263c7ddbd20613736b9a299c442f03d`).
+The corrected prebuilt is `1442852931cbf49829ffcbe8f1b51661ebbf9321828bf0d58b6abd66fc2b6633`;
+see [prebuilt provenance](../device/xiaomi/crux/prebuilt/README.md). It
 contains the stock `/chosen/bootargs` (including
 `androidboot.selinux=permissive`, `buildvariant=eng`,
 `androidboot.boot_devices=soc/1d84000.ufshc`, the panel command

@@ -172,6 +172,9 @@ TW_USE_FSCRYPT_POLICY := 2
 # TWRP configuration
 # ---------------------------------------------------------------------------
 TW_THEME := portrait_hdpi
+# Crux cutout bounds reach 77px; keep the status bar below that top strip.
+TW_Y_OFFSET := 80
+TW_H_OFFSET := -80
 TW_EXTRA_LANGUAGES := true
 TW_DEFAULT_LANGUAGE := zh_CN
 TW_USE_TOOLBOX := true
@@ -195,5 +198,5 @@ TW_IGNORE_MISC_WIPE_DATA := true
 RECOVERY_SDCARD_ON_DATA := true
 TWRP_INCLUDE_LOGCAT := true
 TARGET_USES_LOGD := true
-TW_DEVICE_VERSION := crux-twrp-12.1
+TW_DEVICE_VERSION := crux-twrp-12.1-coachpo
 

@@ -1,26 +1,31 @@
-# prebuilt
+# Prebuilt DT
 
-## `live-dt/twrp-live.dtb`
+## Live DT derived for the PE Crux kernel
 
-ABL live device tree captured from the hardware-verified legacy TWRP 3.3.1 U-Boot FIT.
+`live-dt/twrp-live.dtb` derives from the ABL DT captured from the verified
+legacy TWRP 3.3.1 boot. Its original SHA-256 was
+`9744b16db18c12e8b084c5a30c3c70e94263c7ddbd20613736b9a299c442f03d`.
+The current compatible DT SHA-256 is `1442852931cbf49829ffcbe8f1b51661ebbf9321828bf0d58b6abd66fc2b6633`.
 
-- Source: `out/crux-bootmenu-2026-10-02/twrp-live.dtb` (workspace), captured
-  from the proven TWRP 3.3.1 boot.
-- SHA-256: `9744b16db18c12e8b084c5a30c3c70e94263c7ddbd20613736b9a299c442f03d`
-- Contains the stock ABL `/chosen/bootargs` (permissive SELinux, `buildvariant=eng`,
-  `androidboot.boot_devices=soc/1d84000.ufshc`, panel command
-  `dsi_samsung_fhd_ea8076_f1s_cmd_display:`, ramoops reservation) and the
-  overlay nodes that drive the panel, touch and TEE in recovery.
+Exactly three property changes adapt it to the PE Cepheus 4.14.305 Crux kernel:
 
-`scripts/make-fit.sh` uses this file by default for the new TWRP 3.7.1 candidate;
-the candidate was host-built on 2026-10-02 but is not device-tested. Regenerate
-it only from a working recovery (`/sys/firmware/fdt`) or build a replacement
-from `sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo` and patch `/chosen/bootargs`.
+- `/soc/ufshc@1d84000/reg` adds the ICE range `0x1d90000/0x8000`.
+- The same node gets `reg-names = "ufs_mem", "ufs_ice"`, matching PE's own DTS.
+- `/vendor/extcon_usb1/status` becomes `"disabled"`; its sole consumer USB1
+  is already disabled. This releases PM8150 GPIO10 for the SMB5 charger.
 
-## No prebuilt kernel
+CPU descriptions, primary USB OTG/PD, crypto phandle, memory reservations and
+all other property values are unchanged. The supplied `/chosen` values are
+static capture inputs; U-Boot replaces the initrd and final boot arguments
+at prep. Do not persist debug probe arguments from a later runtime capture.
 
-The kernel is not committed here. TWRP builds it from the
-`coachpo/kernel_xiaomi_crux` `crux-pe13-cepheus` branch through
-`vendor/twrp/build/tasks/kernel.mk`; the expected SHA is a warning check, not a
-manifest pin (see `docs/KERNEL.md`). For quick
-iteration, pass `TARGET_PREBUILT_KERNEL` to `scripts/build-twrp.sh`.
+The corrected working DT has been device-verified with the unchanged PE Image
+on 2026-10-04: eight CPUs, TWRP UI, ADB and normal watchdog takeover. The
+packaged FIT/cache deployment status is recorded in
+[`BUILD-RESULTS-2026-10-04-DT.md`](../../../../docs/BUILD-RESULTS-2026-10-04-DT.md).
+
+## Kernel
+
+No prebuilt kernel is committed here. The manifest tracks `crux-pe13-cepheus`;
+its expected source revision is `e45a24f31ee0d48edba0cc164063c3a631589e31`. The expected SHA is a warning,
+not a pin. See `docs/KERNEL.md` for source and toolchain inputs.

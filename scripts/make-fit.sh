@@ -9,11 +9,10 @@
 #   kernel  load/entry 0x80080000
 #   ramdisk load        0x83000000
 #   fdt     load        0x84800000
-#   fdt_high 0x84900000, initrd_high 0x84200000
+#   fdt_high / initrd_high unset: let U-Boot relocate the large Image and ramdisk
 #
 # The TWRP ramdisk is passed with compression="none": the kernel unpacks the
-# gzip/lzma initramfs itself (CONFIG_RD_GZIP / CONFIG_RD_LZMA are enabled in
-# the crux kernel). The kernel Image is optionally gzip-compressed and
+# gzip initramfs itself (CONFIG_RD_GZIP=y in the PE baseline). The kernel Image is optionally gzip-compressed and
 # declared as such, so U-Boot decompresses it (CONFIG_GZIP=y in the crux
 # U-Boot). That keeps the FIT inside the 64 MiB TWRP cache slot.
 #
@@ -200,4 +199,4 @@ fi
 
 echo
 echo "Updated U-Boot command (board/qualcomm/xiaomi-crux.env):"
-echo "boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 $(printf '0x%x' "$BLOCKS"); setenv fdt_high 0x84900000; setenv initrd_high 0x84200000; bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; bootm go"
+echo "boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 $(printf '0x%x' "$BLOCKS"); setenv fdt_high; setenv initrd_high; bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; run boot_go"
