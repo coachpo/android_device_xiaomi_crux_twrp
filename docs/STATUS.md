@@ -20,7 +20,8 @@ the user confirmed the TWRP interface. See
 | Display | DRM Atomic Commit in recovery log and physical TWRP interface confirmed by user |
 | USB | Recovery ADB verified with normal DWC3/PMIC PD path; MTP transfer not tested |
 | Storage and ICE | Six UFS LUNs enumerated, block devices available, crypto initialization failure removed without disabling QTI crypto |
-| Touch | ST FTS probe and sense-on logged; touch interaction not yet tested |
+| Touch | Basic button interaction accepted by the user on the 2026-10-05 haptics RAM build; broader gesture/keyboard coverage remains untested |
+| Haptics | AIDL-only client and service library-path fix RAM-booted on 2026-10-05; service/firmware/timed AW8697 effects verified, user confirmed vibration and smooth touch. See [HAPTICS.md](HAPTICS.md); cache has not been updated with this fix |
 | Optional top inset | 80px top strip / 1080×2260 content candidate built and RAM-booted with eight CPUs; current cache unchanged. See [DISPLAY-INSET.md](DISPLAY-INSET.md) for scope and UI verification |
 | Persistent menu slot | Corrected cache deployed with explicit authorization; full SHA-256 readback and ordinary menu boot passed; other slots preserved |
 | Data decryption | Not validated; default-password attempt failed in recovery log. No formatting or data-wipe test performed |
@@ -38,6 +39,6 @@ it to remove the error. The prepared update starts from a read-only snapshot
 of the actual 384 MiB cache and changes only the TWRP FIT region. MIUI, PE
 recovery, PE ROM and every byte outside that region are preserved.
 
-Further functionality work includes touch/keys, MTP, haptics, and decryption
+Further functionality work includes broader touch/keys coverage, MTP, and decryption
 with an appropriate test plan. The current validation is recovery startup;
 it does not establish PE ROM startup or full userdata decryption.

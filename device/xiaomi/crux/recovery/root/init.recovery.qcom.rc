@@ -29,10 +29,12 @@ on property:ro.boot.usbcontroller=*
 # package; it is kept explicit so the tree is self-documenting.
 import /init.recovery.qcom_decrypt.rc
 
-# AW8697 haptics (optional, harmless if the service cannot start)
+# The recovery linker searches /system/lib64 by default; the QTI AIDL
+# implementation and effect library are bundled in /vendor/lib64.
 service qti.vibrator /system/bin/vendor.qti.hardware.vibrator.service
     user root
     group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib64/hw
     disabled
     seclabel u:r:recovery:s0
 

@@ -190,8 +190,9 @@ TW_DEFAULT_BRIGHTNESS := 1640
 TW_CUSTOM_CPU_TEMP_PATH := "/sys/class/thermal/thermal_zone1/temp"
 TW_BATTERY_SYSFS_WAIT_SECONDS := 5
 TW_FRAMERATE := 60
+# The bundled QTI vibrator service implements AIDL. Enabling HIDL as well
+# makes minuitwrp select its HIDL branch and skip the available AIDL service.
 TW_SUPPORT_INPUT_AIDL_HAPTICS := true
-TW_SUPPORT_INPUT_1_2_HAPTICS := true
 TW_USE_SERIALNO_PROPERTY_FOR_DEVICE_ID := true
 TW_HAS_EDL_MODE := true
 TW_IGNORE_MISC_WIPE_DATA := true
