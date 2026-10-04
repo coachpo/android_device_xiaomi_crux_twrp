@@ -10,7 +10,7 @@
 #   - non-A/B, static system/vendor partitions, separate recovery partition
 #   - boot header v1, 4096-byte pages, separate DTBO partition
 #   - kernel built from source: kernel/xiaomi/crux (coachpo/kernel_xiaomi_crux
-#     thirteen-plus, Linux 4.14.357-openela "Marisa")
+#     crux-pe13-cepheus, Linux 4.14.305 on the PE official Cepheus baseline)
 #   - all boot entries go through U-Boot; the TWRP FIT is loaded from the cache
 #     partition by the U-Boot boot menu (see docs/UBOOT.md)
 #
@@ -59,17 +59,25 @@ QCOM_BOARD_PLATFORMS += msmnile
 # Kernel - built from source through vendor/twrp/build/tasks/kernel.mk
 # ---------------------------------------------------------------------------
 # The kernel source is provided by the local manifest
-# (manifests/crux-twrp.xml -> coachpo/kernel_xiaomi_crux @ thirteen-plus).
+# (manifests/crux-twrp.xml -> coachpo/kernel_xiaomi_crux @ crux-pe13-cepheus).
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_SOURCE := kernel/xiaomi/crux
 TARGET_KERNEL_CONFIG := crux_defconfig
 TARGET_KERNEL_CLANG_COMPILE := true
-# The crux kernel is built with the LLVM tools, matching the PE13 build.
-# With the AOSP GCC prebuilts' GNU ld the vmlinux link fails with
-# "Cannot change output format whilst linking AArch64 binaries".
-TARGET_KERNEL_CLANG_BIN := $(shell pwd)/prebuilts/clang/host/linux-x86/clang-r416183b1/bin
+# The Cepheus 4.14.305 baseline is built with the PE13 "Prelude" clang 16.0.2
+# in LLVM mode (LLVM=1 + LLVM_IAS=1), matching the PE13 build. The twrp-12.1
+# default clang-r416183b1 (12.0.7) predates the baseline, so point the kernel
+# build at a Prelude copy inside the tree
+# (prebuilts/clang/host/linux-x86/clang-prelude, symlinked to the PE13 tree).
+TARGET_KERNEL_CLANG_VERSION := prelude
+TARGET_KERNEL_CLANG_PATH := $(shell pwd)/prebuilts/clang/host/linux-x86/clang-prelude
+TARGET_KERNEL_CLANG_BIN := $(TARGET_KERNEL_CLANG_PATH)/bin
+# With LLVM=1 the vdso32 Makefile uses $(LD) as LD_COMPAT; pass both anyway so
+# the 32-bit ARM vDSO link never depends on a host `ld` that does not exist.
 TARGET_KERNEL_ADDITIONAL_FLAGS += \
+    LLVM=1 LLVM_IAS=1 \
     LD=$(TARGET_KERNEL_CLANG_BIN)/ld.lld \
+    LD_COMPAT=$(TARGET_KERNEL_CLANG_BIN)/ld.lld \
     AR=$(TARGET_KERNEL_CLANG_BIN)/llvm-ar \
     NM=$(TARGET_KERNEL_CLANG_BIN)/llvm-nm \
     OBJCOPY=$(TARGET_KERNEL_CLANG_BIN)/llvm-objcopy \

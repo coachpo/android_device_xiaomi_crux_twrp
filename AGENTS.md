@@ -3,8 +3,8 @@
 ## Scope and current status
 
 - This checkout owns the Crux TWRP 12.1 device-tree adaptation and its build/FIT scripts. Start with [`README.md`](README.md), then use [`docs/STATUS.md`](docs/STATUS.md), [`docs/KERNEL.md`](docs/KERNEL.md), [`docs/UBOOT.md`](docs/UBOOT.md) and [`docs/DEVICE-TEST.md`](docs/DEVICE-TEST.md) for their separate topics.
-- The new TWRP 3.7.1 adaptation was host-built on 2026-10-02 (`docs/BUILD-RESULTS-2026-10-02.md`) but has not been booted on device. The last device-verified TWRP is the older 3.3.1 image loaded from cache; current device and U-Boot state belongs to [`../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`](../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md). Do not describe the new source tree as device-verified.
-- `manifests/crux-twrp.xml` follows the moving `thirteen-plus` kernel branch and records an expected commit. `scripts/build-twrp.sh` warns on a different kernel commit but continues; do not call the manifest SHA-pinned or assume the warning enforces it.
+- The new TWRP 3.7.1 adaptation was host-built on 2026-10-02 (`docs/BUILD-RESULTS-2026-10-02.md`), rebuilt on 2026-10-03, and moved to the PE Cepheus 4.14.305 kernel baseline on 2026-10-04 (`docs/BUILD-RESULTS-2026-10-04.md`); it has not been booted on device. The last device-verified TWRP is the older 3.3.1 image loaded from cache; current device and U-Boot state belongs to [`../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md`](../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md). Do not describe the new source tree as device-verified.
+- `manifests/crux-twrp.xml` follows the moving `crux-pe13-cepheus` kernel branch and records an expected commit. `scripts/build-twrp.sh` warns on a different kernel commit but continues; do not call the manifest SHA-pinned or assume the warning enforces it.
 - Check this checkout's Git status before editing or syncing. Preserve existing local changes and record source revision changes in the manifest and the related README/kernel status notes.
 
 ## Build and integration boundary

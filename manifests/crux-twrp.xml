@@ -8,10 +8,11 @@
         cp manifests/crux-twrp.xml .repo/local_manifests/
         repo sync
 
-    The kernel project follows the thirteen-plus branch. The expected PE13
-    source revision is 50443f853589625100431e994f675f1b7087edec (Linux
-    4.14.357-openela "Marisa"); scripts/build-twrp.sh only warns on mismatch.
-    TWRP builds the kernel from source through vendor/twrp/build/tasks/kernel.mk.
+    The kernel project follows the crux-pe13-cepheus branch (the PE13 Cepheus
+    baseline migration; Linux 4.14.305). The expected source revision is
+    b38f5a5c8cacddaa2e547c466876d22528e1c7e5; scripts/build-twrp.sh only warns
+    on mismatch. TWRP builds the kernel from source through
+    vendor/twrp/build/tasks/kernel.mk.
 -->
 <manifest>
     <project name="coachpo/android_device_xiaomi_crux_twrp"
@@ -22,12 +23,13 @@
     <project name="coachpo/kernel_xiaomi_crux"
              path="kernel/xiaomi/crux"
              remote="github"
-             revision="thirteen-plus"
+             revision="crux-pe13-cepheus"
              clone-depth="1" />
     <!--
         Expected source revision:
-        50443f853589625100431e994f675f1b7087edec (2026-10-03 branch tip:
-        cleaned crux series, pstore a4f1ffb00827, PE13 bring-up fixes).
+        b38f5a5c8cacddaa2e547c466876d22528e1c7e5 (2026-10-04 branch tip:
+        PE official Cepheus base f4048f154b51, Linux 4.14.305, the 15
+        migration commits and the first-Hibern8 UFS trace).
         scripts/build-twrp.sh warns if the checkout differs.
     -->
 </manifest>

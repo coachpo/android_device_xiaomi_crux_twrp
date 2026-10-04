@@ -49,10 +49,17 @@ Address contract used by the FIT:
 blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes). The
 first TWRP 3.7.1 build (2026-10-02) was `0x2a58` blocks (44,398,928 bytes,
 see `BUILD-RESULTS-2026-10-02.md`); the 2026-10-03 pstore rebuild was
-`0x2a5c` blocks (44,413,240 bytes, see `BUILD-RESULTS-2026-10-03.md`), and
-the final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
-(44,462,716 bytes, see `BUILD-RESULTS-2026-10-03B.md`). The boot menu
+`0x2a5c` blocks (44,413,240 bytes, see `BUILD-RESULTS-2026-10-03.md`), the
+final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
+(44,462,716 bytes, see `BUILD-RESULTS-2026-10-03B.md`), and the 2026-10-04
+Cepheus-baseline build is `0x2935` blocks (43,204,672 bytes, see
+`BUILD-RESULTS-2026-10-04.md`). The boot menu
 environment must be updated to the block count of the FIT actually deployed.
+Since 2026-10-04 the deployed FIT is the Cepheus-baseline one at LBA `0x34000`
+(`boot_twrp` in `board/qualcomm/xiaomi-crux.env`), and the menu entry boots it;
+the Cepheus kernel currently stops after `Starting kernel` (early-boot issue
+tracked by the PE13 records), so the adaptation is integrated but not
+userspace-verified.
 
 The PE payload currently is not a valid four-entry boot layout: `make-cache-payload.py`
 uses `pe-recovery-live.itb` as a fallback when `pe-rom.itb` is absent. That
@@ -65,7 +72,7 @@ system FIT exists and its slot, size, checksums and read length agree.
 
 `scripts/make-fit.sh` packages the TWRP build into `out/fit-twrp/twrp-crux.itb`:
 
-- kernel: intended to be the raw `Image` built from `kernel/xiaomi/crux` (no appended DTBs),
+- kernel: the raw `Image` built from `kernel/xiaomi/crux` (no appended DTBs),
   **gzip-compressed in the FIT** and decompressed by U-Boot (`CONFIG_GZIP=y`)
   so the image stays inside the 64 MiB TWRP cache slot;
 - ramdisk: `ramdisk-recovery.img` (gzip) with `compression = "none"` — the
@@ -74,7 +81,11 @@ system FIT exists and its slot, size, checksums and read length agree.
   the currently-working TWRP FIT uses.
 
 The script prints the exact replacement for `boot_twrp`, recomputed for the
-new FIT size, plus SHA-256 and block count. If the FIT exceeds 64 MiB it warns
+new FIT size, plus SHA-256 and block count. Since 2026-10-04 the replacement
+command must leave `fdt_high`/`initrd_high` unset (`setenv fdt_high; setenv
+initrd_high;`): the Cepheus kernel reserves its full `image_size` and the
+24.5 MiB ramdisk does not fit below the old low `initrd_high=0x84200000`. If
+the FIT exceeds 64 MiB it warns
 and the cache-payload layout has to be renegotiated. The 2026-10-02 build
 packaged the raw `Image` (48,443,408 B, `af1063fa…`) with the separate live DT;
 `BoardConfig.mk` still names `Image-dtb` for the recovery image. Re-check the

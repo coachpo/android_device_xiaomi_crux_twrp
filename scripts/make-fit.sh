@@ -122,7 +122,7 @@ cat > "$ITS" <<EOF
 	#size-cells = <1>;
 	images {
 		kernel {
-			description = "Crux Marisa 4.14 Image (TWRP build)";
+			description = "Crux Cepheus 4.14 Image (TWRP build)";
 			data = /incbin/("kernel.bin");
 			type = "kernel";
 			arch = "arm64";

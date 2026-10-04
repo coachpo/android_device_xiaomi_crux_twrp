@@ -7,9 +7,9 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `thirteen-plus`; expected revision `50443f853589625100431e994f675f1b7087edec` — Linux **4.14.357-openela** (`-Marisa-20260104-ksunext`). The manifest follows the branch; the build script only warns if the revision differs. |
+| Kernel | `kernel/xiaomi/crux` from branch `crux-pe13-cepheus`; expected revision `b38f5a5c8cacddaa2e547c466876d22528e1c7e5` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
-| Status | **Code-level adaptation complete; host build verified 2026-10-02, rebuilt 2026-10-03 with the pstore kernel; not device-verified** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`, `docs/BUILD-RESULTS-2026-10-03.md`) |
+| Status | **Code-level adaptation complete; host build verified 2026-10-02, rebuilt 2026-10-03, and moved to the PE Cepheus 4.14.305 kernel baseline 2026-10-04; integrated into the U-Boot menu, but the Cepheus kernel stops after `Starting kernel` on device (early-boot issue)** (see `docs/STATUS.md`, `docs/BUILD-RESULTS-2026-10-02.md`, `docs/BUILD-RESULTS-2026-10-03.md`, `docs/BUILD-RESULTS-2026-10-03B.md`, `docs/BUILD-RESULTS-2026-10-04.md`) |
 
 The last hardware-verified menu boots the older TWRP 3.3.1 from cache; the
 new 3.7.1 adaptation in this repository was host-built on 2026-10-02 but has
@@ -105,6 +105,23 @@ kernel) produced a 44,413,240 B / `0x2a5c` FIT (`5a731a98…`, see
 (SHA-256 `12c7c985…`, see `docs/BUILD-RESULTS-2026-10-03B.md`). Not
 device-tested.
 
+## Cepheus baseline rebuild (2026-10-04)
+
+The kernel baseline moved from the self-maintained 4.14.357-openela
+`thirteen-plus` line to the PE official Cepheus 4.14.305 baseline that PE13 now
+uses (`kernel/xiaomi/crux` checked out at `crux-pe13-cepheus`,
+`b38f5a5c8cac`) and the kernel is now built with the PE13 Prelude clang 16
+toolchain in LLVM mode. The recovery image and FIT were rebuilt against it
+(43,204,672 B / `0x2935` blocks, SHA-256 `2a0a2c7f…`; sizes and hashes in
+`docs/BUILD-RESULTS-2026-10-04.md`).
+
+On 2026-10-04 the FIT was written to the TWRP cache slot and the U-Boot
+`boot_twrp` command updated (new block count, `fdt_high`/`initrd_high` unset);
+the menu entry boots the FIT, but the Cepheus kernel stops after
+`Starting kernel` without re-enumerating USB/ADB — the same early-boot hang as
+the new-baseline PE recovery candidate. TWRP cannot reach userspace until that
+kernel issue is fixed.
+
 ## Why twrp-12.1 and not a newer branch
 
 As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
@@ -131,7 +148,7 @@ their `lib64` dependencies and firmware). They come from the device's stock
 firmware via the community crux TWRP device tree (TWRP A12.1). See `NOTICE`.
 
 The kernel is **not** committed; it is built from
-`coachpo/kernel_xiaomi_crux` (PE13 kernel line).
+`coachpo/kernel_xiaomi_crux` (the PE13 Cepheus baseline line).
 
 ## Licence
 

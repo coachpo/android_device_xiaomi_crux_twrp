@@ -44,12 +44,12 @@ if [ -n "${LOCAL_DEVICE:-}" ]; then
     fi
 fi
 
-EXPECTED_KERNEL_SHA="50443f853589625100431e994f675f1b7087edec"
+EXPECTED_KERNEL_SHA="b38f5a5c8cacddaa2e547c466876d22528e1c7e5"
 if [ -d kernel/xiaomi/crux/.git ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
     if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then
         echo "warning: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-unknown}" >&2
-        echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.357 PE13 kernel)" >&2
+        echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.305 Cepheus baseline)" >&2
     fi
 fi
 
