@@ -16,6 +16,10 @@ permissions:
   id-token: write
   attestations: write
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: twrp-release-${{ github.ref }}
   cancel-in-progress: false
@@ -84,7 +88,8 @@ jobs:
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          export CCACHE_DIR="$TWRP_TREE/out/.ccache"
+          mkdir -p "$CCACHE_DIR"
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
           ccache --max-size 5G
           df -h "$GITHUB_WORKSPACE"

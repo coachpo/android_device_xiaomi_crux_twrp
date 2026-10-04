@@ -41,7 +41,9 @@ The local tree uses about 26 GiB of source, 10 GiB of repo metadata and 13 GiB
 of output, plus the external compiler. The workflow frees unused preinstalled
 Android/.NET stacks on its fresh hosted runner, prints available space and
 uses its existing CPU count for compilation. It retains up to 5 GiB of
-ccache during a run. The source tree and build outputs are not cached between
+ccache during a run, under `out/.ccache` so the AOSP Ninja sandbox can write
+to it. Run steps explicitly use Bash with `pipefail`, so a compiler or sync
+failure cannot be hidden by the log-preserving `tee`. The source tree and build outputs are not cached between
 runs. Logs are retained even if sync or build fails.
 
 ## Release assets
