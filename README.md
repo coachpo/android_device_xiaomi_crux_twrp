@@ -9,7 +9,7 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 | Device tree path | `device/xiaomi/crux` |
 | Kernel | `kernel/xiaomi/crux` from branch `crux-pe13-cepheus`; expected revision `e45a24f31ee0d48edba0cc164063c3a631589e31` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
-| Status | **Device-verified via the normal U-Boot menu on 2026-10-04:** corrected cache deployed with explicit authorization, full-cache readback matches, PE Cepheus 4.14.305, TWRP 3.7.1 UI/ADB, eight CPUs and normal watchdog takeover. See `docs/BUILD-RESULTS-2026-10-04-DT.md`. |
+| Status | **GitHub Release deployed on 2026-10-05:** signed build and downloaded assets verified, RAM test passed, cache full readback passed, ordinary U-Boot menu item 3 boot passed, eight CPUs and timed vibration verified. See [deployment record](docs/RELEASE-DEPLOYMENT-2026-10-05.md). |
 
 The new PE-baseline TWRP has booted on the device with the DT compatibility
 corrections described in the current result record. The corrected cache slot is deployed and verified by an ordinary menu boot;

@@ -8,9 +8,13 @@ The corrected cache is now deployed with explicit authorization; full readback
 and ordinary menu boot passed. ADB appeared at 11.3 seconds and the user again
 confirmed TWRP UI.
 
-The remaining phases below are a test plan, not completed functional checks.
-Touch interaction, MTP, haptics, recovery operations and full userdata decryption
-have not been validated. Cache is a raw FIT payload container on this setup;
+On 2026-10-05, the haptics repair passed RAM testing and the downloaded GitHub
+Release was deployed and booted via ordinary menu item 3. Timed vibration,
+firmware loading and service startup passed; basic touch/vibration was accepted
+by the user on the local RAM build. See [the deployment record](RELEASE-DEPLOYMENT-2026-10-05.md).
+
+The remaining phases below are a test plan. Broader touch/keys coverage, MTP,
+recovery operations and full userdata decryption have not been validated. Cache is a raw FIT payload container on this setup;
 its mount failure must not be addressed by wiping or formatting it. Device
 storage writes remain owned by the U-Boot integration task and need explicit
 authorization for the specific operation.
@@ -52,7 +56,7 @@ Check UFS enumeration, backlight, touch firmware, `/dev/qseecom`, keymaster/gate
 | Keys | Volume and power input |
 | USB | ADB, MTP and OTG enumeration |
 | Storage | Inspect mount state first; read only unless a separate write test is authorized |
-| Haptics | Check the optional vibrator service |
+| Haptics | Check `init.svc.qti.vibrator=running`, button vibration and automatic stop; see [HAPTICS.md](HAPTICS.md) |
 | RTC | Read the reported time |
 
 ## Phase 4 — data decryption

@@ -52,3 +52,12 @@ and rebuilding `recoveryimage` refreshed them. Inspect the final ramdisk:
 its `system/lib64/libminuitwrp.so` must match the new system build and reference
 `AServiceManager_getService`, with no HIDL `IVibrator::getService` reference.
 This does not affect a fresh CI build.
+
+## GitHub Release deployment
+
+The fix was committed as `8c10afbc879d6213049657a3e89e660bfd987ab5` and
+built by GitHub Actions run `37242105687`. The downloaded, signed Release
+passed its own RAM test and was then written to the TWRP cache slot. Full
+cache readback and ordinary menu item 3 boot passed, as did service/firmware
+and timed vibration tests on the installed CI binaries. See
+[RELEASE-DEPLOYMENT-2026-10-05.md](RELEASE-DEPLOYMENT-2026-10-05.md).
