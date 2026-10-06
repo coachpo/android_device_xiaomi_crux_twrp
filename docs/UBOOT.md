@@ -10,12 +10,15 @@ Every Android/recovery entry is started by the U-Boot boot menu. There is no
 direct ABL -> recovery path in use, and the `recovery` partition is not the
 normal boot source for TWRP on this setup.
 
-The PE Cepheus 4.14.305 TWRP 3.7.1 has booted through the deployed U-Boot
-with the corrected RAM DT: UI/ADB, all eight CPUs and normal Linux watchdog
-ownership. See [the current DT result](BUILD-RESULTS-2026-10-04-DT.md).
-The corrected cache has since been deployed with explicit authorization;
-full-cache readback and ordinary menu boot passed, with ADB at 11.3 seconds
-and the user confirming TWRP UI. The FIT fits the existing `0x293c` blocks.
+The current artifact is the [2026-10-05 GitHub Release](RELEASE-DEPLOYMENT-2026-10-05.md),
+with PE Cepheus 4.14.305, TWRP 3.7.1, corrected live DT, top inset and haptics.
+The new workspace U-Boot menu reads its exact `0x2924` blocks; the ordinary
+menu item 3 recheck reached ADB in 9.69 seconds with eight CPUs. See the
+[current workspace baseline](../../docs/pe13-development-baseline-2026-10-05.md)
+and [`boot_twrp` source](../../u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env).
+The [2026-10-04 DT result](BUILD-RESULTS-2026-10-04-DT.md) retains the first
+startup evidence. Physical touch/haptics acceptance and untested functions
+are distinguished in [STATUS.md](STATUS.md).
 Current debug boots follow the [watchdog recovery guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md).
 
 Use a checked `run boot_go` handoff or explicitly arm and check the timer
@@ -32,11 +35,12 @@ The legacy commands and source-state descriptions below preserve the earlier
 integration evidence. They are not current watchdog-protected debug recipes;
 use the guide above and the block count of the FIT actually deployed.
 
-The hardware-verified `ub-crux-bootmenu.img` and cache payload contain only
-the MIUI and TWRP FITs below. The source checkout now also has uncommitted PE
+The earlier MIUI/TWRP-only checkpoint used the hardware-verified
+`ub-crux-bootmenu.img` and cache payload below. Its historical source-state
+description also recorded uncommitted PE
 menu entries and an uncommitted `boot/bootm.c` change to reserve the arm64
-kernel's full BSS footprint. These changes and their older candidate image have
-not been rebuilt together, flashed or device-verified.
+kernel's full BSS footprint. Those changes and their candidate image had
+not yet been rebuilt together, flashed or device-verified in that earlier record.
 
 ```text
 cache partition: UFS LUN0, 4096-byte blocks, starts at LBA 0x30000
@@ -66,13 +70,15 @@ see `BUILD-RESULTS-2026-10-02.md`); the 2026-10-03 pstore rebuild was
 final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
 (44,462,716 bytes, see `BUILD-RESULTS-2026-10-03B.md`), and the 2026-10-04
 Cepheus-baseline build is `0x2935` blocks (43,204,672 bytes, see
-`BUILD-RESULTS-2026-10-04.md`). The boot menu
-environment must be updated to the block count of the FIT actually deployed.
+`BUILD-RESULTS-2026-10-04.md`). Integration must verify that the menu's read
+count covers the deployed FIT.
 Those descriptions refer to dated payloads and are superseded by the current
-four-slot cache layout. The deployed fixed2 TWRP FIT uses `0x293c` blocks;
-its corrected DT replacement keeps that count. The current cache backup and
-replacement record preserve MIUI, TWRP, PE recovery and PE ROM as separate
-64 MiB slots; see the current DT result and workspace handoff D.
+four-slot cache layout. The 2026-10-04 fixed2 FIT used `0x293c` blocks, and its
+corrected DT replacement kept that count. The 2026-10-05 Release uses `0x2924`;
+the then-existing `0x293c` menu read was sufficient, so that deployment needed
+no environment change. The current workspace menu now reads `0x2924`.
+Use the current baseline above for the menu and cache layout; preserve each
+MIUI, TWRP, PE Recovery and PE ROM payload region during an authorized update.
 
 ## What this repository produces
 
@@ -127,8 +133,9 @@ contains the stock `/chosen/bootargs` (including
 `msm_drm.dsi_display0=dsi_samsung_fhd_ea8076_f1s_cmd_display:` and the
 `ramoops_memreserve` reservation).
 
-It is kept because the panel/touch/keymaster nodes come from ABL's overlay and
-are known to drive the hardware in recovery. If it must be regenerated, boot a
+It preserves the panel/touch/keymaster hardware descriptions from ABL's overlay.
+Node presence does not establish complete touch or decryption support; use
+[STATUS.md](STATUS.md) for the observed validation scope. If it must be regenerated, boot a
 working recovery and read `/sys/firmware/fdt`, or build a DT from the kernel
 sources (`sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo`) and patch
 `/chosen/bootargs` before packaging.

@@ -11,13 +11,17 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
 | Status | **GitHub Release deployed on 2026-10-05:** signed build and downloaded assets verified, RAM test passed, cache full readback passed, ordinary U-Boot menu item 3 boot passed, eight CPUs and timed vibration verified. See [deployment record](docs/RELEASE-DEPLOYMENT-2026-10-05.md). |
 
-The new PE-baseline TWRP has booted on the device with the DT compatibility
-corrections described in the current result record. The corrected cache slot is deployed and verified by an ordinary menu boot;
-the phone currently remains in TWRP.
+The deployed Release includes the corrected live DT, 80px top inset and haptics
+repair. The workspace's new U-Boot menu reads `0x2924` blocks and its TWRP
+recheck reached ADB in 9.69 seconds with eight CPUs; see the
+[development baseline](../docs/pe13-development-baseline-2026-10-05.md).
+Basic touch and vibration were accepted on the local RAM fix. Broader
+touch/keys, MTP, recovery operations and decryption remain unverified; see
+[current verification boundaries](docs/STATUS.md).
 U-Boot source and payload ownership is in `u-boot-port/`. This repository
 produces the FIT and its exact `boot_twrp` command for integration; it does not
 change the U-Boot checkout, flash cache or operate the device. See
-`docs/UBOOT.md` and the [latest recorded device handoff](../u-boot-port/notes/HANDOFF-NEXT-2026-10-02.md).
+`docs/UBOOT.md` and the [workspace documentation index](../docs/README.md).
 
 ## Repository layout
 
@@ -67,13 +71,9 @@ scripts/insert-cache-payload.py --fit out/fit-twrp/twrp-crux.itb \
     --base ../out/crux-bootmenu-2026-10-02/cache-payload.img
 ```
 
-For quick kernel iterations TWRP can reuse an already-built kernel instead of
-rebuilding the source:
-
-```sh
-TARGET_PREBUILT_KERNEL="/path/to/matching-cepheus/Image" \
-TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
-```
+For quick kernel iterations, TWRP can reuse a recorded Cepheus 4.14.305 Image.
+Use the [prebuilt-kernel workflow](docs/KERNEL.md#toolchain) and record the
+selected artifact's source and working-tree changes.
 
 ## GitHub Actions builds and releases
 
@@ -154,10 +154,10 @@ As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
 - `android-13`, `android-14` and `android-14.1` exist in the TWRP repository
   but have **no official release** (`android-14.1` still identifies as
   `3.7.1_14`). They are a later, separate evaluation.
-- Linux 4.14 is **not** a documented TWRP ceiling. The crux kernel already has
-  `ANDROID_BINDERFS`, `DM_DEFAULT_KEY`, `DM_CRYPT`, `DM_VERITY`,
-  `FS_ENCRYPTION` (+ inline crypt), `EROFS_FS`, `SCSI_UFS_QCOM`, `DRM_MSM`,
-  `USB_CONFIGFS_F_FS/F_MTP`, `INPUT_EVDEV` and the `ST_FTS_V521` touch driver.
+- Linux 4.14 is **not** a documented TWRP ceiling. The current Cepheus
+  baseline's [kernel capabilities](docs/KERNEL.md#verified-kernel-capabilities-for-twrp)
+  include Binder, encryption/ICE, UFS, DRM, USB and touch support; EROFS is
+  disabled, and the device mounts system as ext4.
   The one deliberate difference is that TWRP 12.1's vold still falls back to
   the session keyring for v1 fscrypt policies, while 14.1 removed that
   fallback — relevant only if `twrp-14.1` is evaluated later.

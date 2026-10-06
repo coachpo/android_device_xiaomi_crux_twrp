@@ -1,8 +1,12 @@
 # Status
 
-Latest update (2026-10-05): the haptics fix was built and published by GitHub
-Actions, then the downloaded Release FIT passed RAM testing and was deployed
-to cache. Ordinary U-Boot menu item 3 booted it with full readback verification.
+Latest update (2026-10-06): the workspace's new menu reads `0x2924` blocks and its TWRP recheck
+reached ADB in 9.69 seconds with eight CPUs; see the
+[development baseline](../../docs/pe13-development-baseline-2026-10-05.md).
+
+The haptics fix was built and published by GitHub Actions, then the downloaded
+Release FIT passed RAM testing and was deployed to cache on 2026-10-05.
+Ordinary U-Boot menu item 3 booted it with full readback verification.
 See [GitHub Release deployment](RELEASE-DEPLOYMENT-2026-10-05.md).
 
 The PE official Cepheus 4.14.305 Crux kernel has booted TWRP 3.7.1 through the
@@ -33,17 +37,18 @@ the user confirmed the TWRP interface. See
 
 ## Integration and remaining verification
 
-The deployed Release FIT uses `0x2924` 4096-byte UFS blocks; the existing
-menu reads `0x293c`, which remains sufficient. Keep `fdt_high` and
+The deployed Release FIT uses `0x2924` 4096-byte UFS blocks, and the current
+workspace menu reads `0x2924`. The 2026-10-05 Release deployment used the older
+`0x293c` read, which was sufficient and needed no environment update. Keep `fdt_high` and
 `initrd_high` unset; the older fixed ceilings do not fit the current Image
 and ramdisk. The generated command uses the integration owner's guarded
 `run boot_go` handoff.
 
 The cache partition is a raw boot-payload container, not a mountable recovery
 cache filesystem. Its mount error is expected in this layout; do not format
-it to remove the error. The prepared update starts from a read-only snapshot
-of the actual 384 MiB cache and changes only the TWRP FIT region. MIUI, PE
-recovery, PE ROM and every byte outside that region are preserved.
+it to remove the error. The 2026-10-05 TWRP Release update started from a read-only snapshot
+of the actual 384 MiB cache and changed only the TWRP FIT region. MIUI, PE
+recovery, PE ROM and every byte outside that region were preserved by that update.
 
 Further functionality work includes broader touch/keys coverage, MTP, and decryption
 with an appropriate test plan. The current validation is recovery startup;

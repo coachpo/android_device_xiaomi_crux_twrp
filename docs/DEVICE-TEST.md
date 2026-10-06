@@ -75,7 +75,7 @@ If an authorized credential test fails, capture `/tmp/recovery.log` and compare 
 
 ## Phase 5 — storage-changing recovery tests
 
-Wiping cache/metadata, formatting `/data`, flashing boot/dtbo, or restoring data changes device storage and can cause data loss or an unbootable device. Run a specific operation only with explicit authorization for that operation, a confirmed backup/recovery path, the exact target device and verified image. Record the command and read-back result.
+Wiping metadata, formatting `/data`, flashing boot/dtbo, or restoring data changes device storage and can cause data loss or an unbootable device. Run a specific operation only with explicit authorization for that operation, a confirmed backup/recovery path, the exact target device and verified image. Record the command and read-back result. The raw cache payload container is excluded from recovery wipe/format tests; payload updates belong to the U-Boot integration owner.
 
 ## Failure recovery
 

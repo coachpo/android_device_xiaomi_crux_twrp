@@ -1,6 +1,10 @@
 # Device boot result with corrected Crux DT
 
-The unchanged PE official Cepheus 4.14.305 Crux Image now boots TWRP 3.7.1
+This is the first corrected-DT startup record from 2026-10-04. The current
+TWRP artifact and its deployment checks are in the
+[2026-10-05 Release record](RELEASE-DEPLOYMENT-2026-10-05.md).
+
+The unchanged PE official Cepheus 4.14.305 Crux Image booted TWRP 3.7.1
 through U-Boot. The repair is in the DT used by the FIT, not a kernel rollback.
 
 ## Failure and repair

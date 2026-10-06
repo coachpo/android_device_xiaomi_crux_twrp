@@ -31,6 +31,13 @@ The expected revision is `d035d3881e3732bb8e56b5c251ca21f85cf4e404` (see
 Linux version 4.14.305-Crux-PE-ge45a24f31ee0
 ```
 
+The 2026-10-05 branch rename preserved the recorded Image revision and DT
+repair; `origin/thirteen` is published and is the default branch. The current
+branch also includes the accepted source repairs and build/CI tooling; a
+rebuild at the expected revision is a new artifact. The commit warning does
+not check working-tree changes, so each build also needs its source patch.
+Historical bundles still contain the original `crux-pe13-cepheus` reference.
+
 It is the official PE Cepheus source
 (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`, branch
 `thirteen`, Linux 4.14.305) plus the Crux migration and early-boot memory-limit fixes. The USB1 extcon
@@ -38,8 +45,9 @@ board correction is now committed in the maintained kernel source. The
 previously verified Image and DT-only repair are recorded in
 [`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The migration record, patch set and Git bundle
 are in [`../../out/crux-kernel-cepheus-2026-10-03/`](../../out/crux-kernel-cepheus-2026-10-03/README.md);
-the legacy archive of the old tree is in
-[`../../out/crux-kernel-legacy-archive-2026-10-03/`](../../out/crux-kernel-legacy-archive-2026-10-03/README.md).
+the old Marisa checkout and its dedicated archive were removed after the new
+kernel validation. See the
+[cleanup record](../../out/crux-pe13-baseline-2026-10-05/kernel-marisa-local-cleanup.json).
 For a historical offline revision, fetch a bundle containing that revision
 and verify its exported refs before selecting it. The example below restores
 the frozen migration revision from its original exported `crux-pe13-cepheus`
@@ -47,8 +55,8 @@ ref; it does not restore the current expected commit:
 
 ```sh
 git -C kernel/xiaomi/crux fetch /path/to/crux-pe13-cepheus.bundle \
-    crux-pe13-cepheus:refs/remotes/local/thirteen
-git -C kernel/xiaomi/crux checkout -B thirteen local/thirteen
+    crux-pe13-cepheus:refs/remotes/local/crux-pe13-cepheus
+git -C kernel/xiaomi/crux checkout -B thirteen local/crux-pe13-cepheus
 ```
 
 The previous `thirteen-plus` line (`50443f853589`, 4.14.357-openela "Marisa")
@@ -99,7 +107,7 @@ the build environment does not have.
 Alternatively, reuse an already-built kernel image (PE13 build):
 
 ```sh
-TARGET_PREBUILT_KERNEL=/path/to/out/crux-kernel-cepheus-2026-10-03/Image \
+TARGET_PREBUILT_KERNEL=/path/to/accepted-kernel/Image \
 TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
 ```
 
@@ -160,6 +168,6 @@ skip the kernel build during iteration.
    (PE13 selects `kernel/xiaomi/crux-pe-cepheus`).
 3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild from
    a clean kernel checkout; uncommitted defconfig or driver experiments change
-   the kernel even when HEAD matches. The `thirteen` branch is published on
-   GitHub; use the matching migration bundle for offline or recorded revisions
-   (see `Source`).
+   the kernel even when HEAD matches. `origin/thirteen` is published; use the
+   matching local migration bundle when working offline or restoring a
+   recorded revision (see `Source`).
