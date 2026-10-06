@@ -14,17 +14,18 @@ The kernel is **not** stored in this repository. TWRP's inline kernel build
 | `BOARD_KERNEL_IMAGE_NAME` | `Image-dtb` |
 | `BOARD_KERNEL_SEPARATED_DTBO` | `true` |
 
-The manifest follows branch `crux-pe13-cepheus` and the build script warns when
+The manifest follows branch `thirteen` and the build script warns when
 the checkout differs from the expected revision; it does not pin the commit:
 
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="github"
-         revision="crux-pe13-cepheus" clone-depth="1" />
+         revision="thirteen" clone-depth="1" />
 ```
 
-The expected revision is `e45a24f31ee0d48edba0cc164063c3a631589e31` (see
-`scripts/build-twrp.sh`). The branch is the PE13 Cepheus baseline migration:
+The expected revision is `d035d3881e3732bb8e56b5c251ca21f85cf4e404` (see
+`scripts/build-twrp.sh`). The previously verified TWRP Image was built at
+`e45a24f31ee0` and reported:
 
 ```text
 Linux version 4.14.305-Crux-PE-ge45a24f31ee0
@@ -32,20 +33,22 @@ Linux version 4.14.305-Crux-PE-ge45a24f31ee0
 
 It is the official PE Cepheus source
 (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`, branch
-`thirteen`, Linux 4.14.305) plus the Crux migration and early-boot memory-limit fixes. The verified
-Image is unchanged by the current DT-only repair; see
+`thirteen`, Linux 4.14.305) plus the Crux migration and early-boot memory-limit fixes. The USB1 extcon
+board correction is now committed in the maintained kernel source. The
+previously verified Image and DT-only repair are recorded in
 [`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The migration record, patch set and Git bundle
 are in [`../../out/crux-kernel-cepheus-2026-10-03/`](../../out/crux-kernel-cepheus-2026-10-03/README.md);
 the legacy archive of the old tree is in
 [`../../out/crux-kernel-legacy-archive-2026-10-03/`](../../out/crux-kernel-legacy-archive-2026-10-03/README.md).
-For an offline build or a recorded revision unavailable from the moving remote
-branch, fetch the matching migration bundle locally. Verify its contents and
-selected commit; a previous branch publication does not prove the current tip:
+For a historical offline revision, fetch a bundle containing that revision
+and verify its exported refs before selecting it. The example below restores
+the frozen migration revision from its original exported `crux-pe13-cepheus`
+ref; it does not restore the current expected commit:
 
 ```sh
 git -C kernel/xiaomi/crux fetch /path/to/crux-pe13-cepheus.bundle \
-    crux-pe13-cepheus:refs/remotes/local/crux-pe13-cepheus
-git -C kernel/xiaomi/crux checkout -B crux-pe13-cepheus local/crux-pe13-cepheus
+    crux-pe13-cepheus:refs/remotes/local/thirteen
+git -C kernel/xiaomi/crux checkout -B thirteen local/thirteen
 ```
 
 The previous `thirteen-plus` line (`50443f853589`, 4.14.357-openela "Marisa")
@@ -117,7 +120,7 @@ To add them, place a fragment in the kernel repository at
 `TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig`. This is deliberately
 not enabled yet: it modifies the shared PE13 kernel repository and the missing
 options do not block recovery. The verified Image was built at `e45a24f31ee0`; the Crux source DT now
-has an uncommitted board correction disabling the unused USB1 GPIO extcon; the Crux hung-task/softlockup diagnostics that used to
+has the committed board correction disabling the unused USB1 GPIO extcon; the Crux hung-task/softlockup diagnostics that used to
 be uncommitted on the old tree are part of the migration commits here.
 
 ## Verified kernel capabilities for TWRP
@@ -157,6 +160,6 @@ skip the kernel build during iteration.
    (PE13 selects `kernel/xiaomi/crux-pe-cepheus`).
 3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild from
    a clean kernel checkout; uncommitted defconfig or driver experiments change
-   the kernel even when HEAD matches. Because the tree is not yet published to
-   GitHub, fetch the branch locally from the migration bundle first (see
-   `Source`).
+   the kernel even when HEAD matches. The `thirteen` branch is published on
+   GitHub; use the matching migration bundle for offline or recorded revisions
+   (see `Source`).

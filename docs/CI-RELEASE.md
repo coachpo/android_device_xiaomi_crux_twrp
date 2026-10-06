@@ -29,8 +29,8 @@ fresh tag, or remove that failed draft before explicitly reusing its tag.
 - TWRP minimal manifest branch `twrp-12.1`.
 - Device files from the exact triggering checkout, copied from this
   repository's `device/xiaomi/crux` leaf directory.
-- `coachpo/kernel_xiaomi_crux`, branch `crux-pe13-cepheus`; expected revision
-  `e45a24f31ee0d48edba0cc164063c3a631589e31`. As with local builds this remains
+- `coachpo/kernel_xiaomi_crux`, branch `thirteen`; expected revision
+  `d035d3881e3732bb8e56b5c251ca21f85cf4e404`. As with local builds this remains
   a branch selection and a warning check, rather than a pin.
 - Prelude Clang 16.0.2 from `jjpprrrr/prelude-clang` on GitLab, pinned to
   `ac8fce34dc0f6918672100d7a6e867a66b8afa8f`.

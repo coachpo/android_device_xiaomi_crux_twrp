@@ -10,7 +10,7 @@
 #   - non-A/B, static system/vendor partitions, separate recovery partition
 #   - boot header v1, 4096-byte pages, separate DTBO partition
 #   - kernel built from source: kernel/xiaomi/crux (coachpo/kernel_xiaomi_crux
-#     crux-pe13-cepheus, Linux 4.14.305 on the PE official Cepheus baseline)
+#     thirteen, Linux 4.14.305 on the PE official Cepheus baseline)
 #   - all boot entries go through U-Boot; the TWRP FIT is loaded from the cache
 #     partition by the U-Boot boot menu (see docs/UBOOT.md)
 #
@@ -59,7 +59,7 @@ QCOM_BOARD_PLATFORMS += msmnile
 # Kernel - built from source through vendor/twrp/build/tasks/kernel.mk
 # ---------------------------------------------------------------------------
 # The kernel source is provided by the local manifest
-# (manifests/crux-twrp.xml -> coachpo/kernel_xiaomi_crux @ crux-pe13-cepheus).
+# (manifests/crux-twrp.xml -> coachpo/kernel_xiaomi_crux @ thirteen).
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_SOURCE := kernel/xiaomi/crux
 TARGET_KERNEL_CONFIG := crux_defconfig

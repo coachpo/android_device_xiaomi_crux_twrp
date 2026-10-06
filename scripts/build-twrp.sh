@@ -46,7 +46,7 @@ if [ -n "${LOCAL_DEVICE:-}" ]; then
     fi
 fi
 
-EXPECTED_KERNEL_SHA="e45a24f31ee0d48edba0cc164063c3a631589e31"
+EXPECTED_KERNEL_SHA="d035d3881e3732bb8e56b5c251ca21f85cf4e404"
 if [ -d kernel/xiaomi/crux/.git ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
     if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then

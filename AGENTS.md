@@ -4,7 +4,7 @@
 
 - This checkout owns the Crux TWRP 12.1 device-tree adaptation and its build/FIT scripts. Start with [`README.md`](README.md), then use [`docs/STATUS.md`](docs/STATUS.md), [`docs/KERNEL.md`](docs/KERNEL.md), [`docs/UBOOT.md`](docs/UBOOT.md) and [`docs/DEVICE-TEST.md`](docs/DEVICE-TEST.md) for their separate topics.
 - The PE Cepheus 4.14.305 TWRP 3.7.1 has booted from the corrected cache through the ordinary U-Boot menu on 2026-10-04; UI/ADB, eight CPUs, watchdog ownership and full cache readback are verified. Use [`docs/BUILD-RESULTS-2026-10-04-DT.md`](docs/BUILD-RESULTS-2026-10-04-DT.md) for exact artifacts and verification boundaries. Do not describe untested touch interaction, MTP, recovery operations, userdata decryption or PE ROM behavior as verified.
-- `manifests/crux-twrp.xml` follows the moving `crux-pe13-cepheus` kernel branch and records an expected commit. `scripts/build-twrp.sh` warns on a different kernel commit but continues; do not call the manifest SHA-pinned or assume the warning enforces it.
+- `manifests/crux-twrp.xml` follows the moving `thirteen` kernel branch and records an expected commit. `scripts/build-twrp.sh` warns on a different kernel commit but continues; do not call the manifest SHA-pinned or assume the warning enforces it.
 - Check this checkout's Git status before editing or syncing. Preserve existing local changes and record source revision changes in the manifest and the related README/kernel status notes.
 
 ## Build and integration boundary

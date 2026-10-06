@@ -26,6 +26,6 @@ packaged FIT/cache deployment status is recorded in
 
 ## Kernel
 
-No prebuilt kernel is committed here. The manifest tracks `crux-pe13-cepheus`;
-its expected source revision is `e45a24f31ee0d48edba0cc164063c3a631589e31`. The expected SHA is a warning,
+No prebuilt kernel is committed here. The manifest tracks `thirteen`;
+its expected source revision is `d035d3881e3732bb8e56b5c251ca21f85cf4e404`. The expected SHA is a warning,
 not a pin. See `docs/KERNEL.md` for source and toolchain inputs.
