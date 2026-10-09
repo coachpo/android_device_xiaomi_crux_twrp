@@ -1,5 +1,7 @@
 # Crux TWRP — Xiaomi Mi 9 Pro 5G (TWRP 3.7.1 / twrp-12.1)
 
+**Sealed artifact status (October 9, 2026):** the deployed October 5 Release `twrp-crux-3.7.1_12-37242105687-1` is retained as an independent historical baseline input. No new TWRP build or acceptance was added by the October 9 PE regression. See [the three-component sealing overview](../docs/rom-recovery-baseline-seal-status-2026-10-09.md) for exact identities and remaining limits. Public tier 1 uses a separately accepted PE Recovery set and does not include TWRP.
+
 Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 (codename **crux**, SM8150 / msmnile).
 
@@ -7,7 +9,7 @@ Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `thirteen`; expected revision `d035d3881e3732bb8e56b5c251ca21f85cf4e404` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. |
+| Kernel | `kernel/xiaomi/crux` from branch `thirteen`; expected revision `d035d3881e3732bb8e56b5c251ca21f85cf4e404` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. The branch has since advanced to the tier 1 baseline commit `5e4950d2619f`; TWRP has not been rebuilt against it. |
 | Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
 | Status | **GitHub Release deployed on 2026-10-05:** signed build and downloaded assets verified, RAM test passed, cache full readback passed, ordinary U-Boot menu item 3 boot passed, eight CPUs and timed vibration verified. See [deployment record](docs/RELEASE-DEPLOYMENT-2026-10-05.md). |
 

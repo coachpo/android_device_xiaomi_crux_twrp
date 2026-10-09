@@ -1,5 +1,7 @@
 # GitHub Release deployment (2026-10-05)
 
+Current sealing index (October 9): this Release remains the fixed historical TWRP input in the workspace baseline. Its original deployment/test scope below is unchanged; see [component sealing status](../../docs/rom-recovery-baseline-seal-status-2026-10-09.md). No new TWRP hardware acceptance or public tier 1 certification follows from PE regression. Public tier 1 recovery is the separately accepted PE Recovery candidate set; this TWRP Release remains the TWRP development input.
+
 [Release](https://github.com/coachpo/android_device_xiaomi_crux_twrp/releases/tag/twrp-crux-3.7.1_12-37242105687-1) was built from the haptics fix commit
 `8c10afbc879d6213049657a3e89e660bfd987ab5` by [Actions run 37242105687](https://github.com/coachpo/android_device_xiaomi_crux_twrp/actions/runs/37242105687).
 The downloaded Release passed RAM testing, then was deployed to Crux's cache

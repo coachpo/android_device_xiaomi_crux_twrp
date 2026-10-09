@@ -24,7 +24,11 @@ the checkout differs from the expected revision; it does not pin the commit:
 ```
 
 The expected revision is `d035d3881e3732bb8e56b5c251ca21f85cf4e404` (see
-`scripts/build-twrp.sh`). The previously verified TWRP Image was built at
+`scripts/build-twrp.sh`). The branch has since advanced, through published
+`07426c499bef` to the tier 1 baseline commit
+`5e4950d2619f2e2119765b6b48c5b3be2efcaa9e`; the expected warning value and every
+TWRP verification still refer to the older state because no TWRP rebuild has
+been performed against it. The previously verified TWRP Image was built at
 `e45a24f31ee0` and reported:
 
 ```text
