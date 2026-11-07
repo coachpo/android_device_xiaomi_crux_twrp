@@ -14,7 +14,7 @@ The current artifact is the [2026-10-05 GitHub Release](RELEASE-DEPLOYMENT-2026-
 with PE Cepheus 4.14.305, TWRP 3.7.1, corrected live DT, top inset and haptics.
 The new workspace U-Boot menu reads its exact `0x2924` blocks; the ordinary
 menu item 3 recheck reached ADB in 9.69 seconds with eight CPUs. See the
-[current workspace baseline](../../docs/pe13-development-baseline-2026-10-05.md)
+workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery)
 and [`boot_twrp` source](../../u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env).
 The [2026-10-04 DT result](BUILD-RESULTS-2026-10-04-DT.md) retains the first
 startup evidence. Physical touch/haptics acceptance and untested functions

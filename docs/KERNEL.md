@@ -48,14 +48,16 @@ It is the official PE Cepheus source
 board correction is now committed in the maintained kernel source. The
 previously verified Image and DT-only repair are recorded in
 [`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The migration record, patch set and Git bundle
-are in [`../../out/crux-kernel-cepheus-2026-10-03/`](../../out/crux-kernel-cepheus-2026-10-03/README.md);
-the old Marisa checkout and its dedicated archive were removed after the new
-kernel validation. See the
-[cleanup record](../../out/crux-pe13-baseline-2026-10-05/kernel-marisa-local-cleanup.json).
+were in the workspace's `out/crux-kernel-cepheus-2026-10-03/`; the old Marisa
+checkout and its dedicated archive were removed after the new kernel
+validation. That directory and the Marisa cleanup record were deleted on
+2026-11-07. The retained offline bundle of the maintained `thirteen` branch is
+described in the workspace [kernel repository status](../../docs/kernel-repository-maintenance-2026-10-06.md).
 For a historical offline revision, fetch a bundle containing that revision
 and verify its exported refs before selecting it. The example below restores
 the frozen migration revision from its original exported `crux-pe13-cepheus`
-ref; it does not restore the current expected commit:
+ref, which no retained bundle exports; it does not restore the current
+expected commit:
 
 ```sh
 git -C kernel/xiaomi/crux fetch /path/to/crux-pe13-cepheus.bundle \

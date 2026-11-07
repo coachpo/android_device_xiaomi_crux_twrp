@@ -2,7 +2,7 @@
 
 ## Sealed version retained on October 9
 
-The October 5 deployed Release is retained in the October 9 workspace artifact registry with `new_current_TWRP_build_or_acceptance_claim=false`. It has not been rebuilt or revalidated by the PE installation/regression task. See [the sealing overview](../../docs/rom-recovery-baseline-seal-status-2026-10-09.md).
+The October 5 deployed Release was sealed in the October 9 workspace artifact registry with `new_current_TWRP_build_or_acceptance_claim=false`; that registry and its sealing overview were deleted on 2026-11-07. The Release is now the retained cache TWRP entry and CRC witness in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery). It has not been rebuilt or revalidated since; installs use the separate RAM-only TWRP v2.
 
 | Identity | Fixed sealed input |
 | --- | --- |
@@ -19,8 +19,9 @@ Installed Release final physical UI feedback, broad touch/keyboard, MTP, decrypt
 ## Historical deployment and verification
 
 Latest update (2026-10-06): the workspace's new menu reads `0x2924` blocks and its TWRP recheck
-reached ADB in 9.69 seconds with eight CPUs; see the
-[development baseline](../../docs/pe13-development-baseline-2026-10-05.md).
+reached ADB in 9.69 seconds with eight CPUs. The development baseline that recorded
+it was deleted on 2026-11-07; the retained menu-boot evidence is listed in the
+workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery).
 
 The haptics fix was built and published by GitHub Actions, then the downloaded
 Release FIT passed RAM testing and was deployed to cache on 2026-10-05.
