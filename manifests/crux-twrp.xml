@@ -28,15 +28,13 @@
              revision="thirteen"
              clone-depth="1" />
     <!--
-        Expected source revision:
-        d035d3881e3732bb8e56b5c251ca21f85cf4e404 (2026-10-06 TWRP-verified
-        state, not the current branch tip: PE official Cepheus base
-        f4048f154b51, Linux 4.14.305, the Crux migration, accepted source
-        repairs and Crux build/CI tooling). scripts/build-twrp.sh warns if the
-        checkout differs. The thirteen branch has since advanced, through
-        published 07426c499bef to the tier 1 baseline commit
-        5e4950d2619f2e2119765b6b48c5b3be2efcaa9e; no TWRP rebuild has been
-        performed against it.
+        Expected source revision checked (warning only) by
+        scripts/build-twrp.sh: d035d3881e3732bb8e56b5c251ca21f85cf4e404, set
+        when this checkout moved to the maintained thirteen branch on
+        2026-10-06 (PE official Cepheus base f4048f154b51, Linux 4.14.305, the
+        Crux migration). The retained Release kernel is e45a24f31ee0; the PE
+        source lock pins thirteen at 086b838e3a50. No TWRP build against
+        either later revision is recorded.
     -->
     <!-- Same Prelude Clang 16.0.2 revision as the verified local PE/TWRP build. -->
     <project name="jjpprrrr/prelude-clang"

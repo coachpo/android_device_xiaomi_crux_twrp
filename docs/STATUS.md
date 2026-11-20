@@ -1,10 +1,10 @@
 # Status
 
-## Sealed version retained on October 9
+## Retained Release
 
-The October 5 deployed Release was sealed in the October 9 workspace artifact registry with `new_current_TWRP_build_or_acceptance_claim=false`; that registry and its sealing overview were deleted on 2026-11-07. The Release is now the retained cache TWRP entry and CRC witness in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery). It has not been rebuilt or revalidated since; installs use the separate RAM-only TWRP v2.
+The October 5 deployed Release is the retained cache TWRP entry and CRC witness in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery). It has not been rebuilt or revalidated since. Signed TWRP ZIP installs use the separate RAM-only install TWRP v3; the host direct installer uses RAM-only TWRP v2.
 
-| Identity | Fixed sealed input |
+| Identity | Value |
 | --- | --- |
 | Runtime version | `3.7.1_12-crux-twrp-12.1-coachpo` |
 | Release tag | `twrp-crux-3.7.1_12-37242105687-1` |
@@ -12,16 +12,15 @@ The October 5 deployed Release was sealed in the October 9 workspace artifact re
 | FIT SHA256 | `df812eef1821f519a2864b56d9f192eda22260aad6a24e9851503c72b692e2c1` |
 | Kernel | Original CI `e45a24f31ee0` Cepheus Crux / 4.14.305; not Image858 or the newer maintained source HEAD |
 | Symbols | 109 CI userland Build IDs matched; exact CI kernel ELF was not retained. The local kernel is separately paired. |
-| Maintained kernel branch | `thirteen` advanced after this Release, through published `07426c…` to the tier 1 baseline commit `5e4950d2619f`; TWRP has not been rebuilt or revalidated against it |
+| Maintained kernel branch | `thirteen` advanced after this Release (the PE source lock pins `086b838e3a50`); no TWRP rebuild or revalidation against it is recorded |
 
-Installed Release final physical UI feedback, broad touch/keyboard, MTP, decryption and backup/restore remain unverified. Historical RAM-fix feedback and PE results retain their own scopes. Public tier 1 uses a separately accepted PE Recovery set (2026100905/2026100906); TWRP is not part of that release product and has no new build or acceptance.
+Installed Release final physical UI feedback, broad touch/keyboard, MTP, decryption and backup/restore remain unverified. Historical RAM-fix feedback and PE results retain their own scopes. TWRP does not certify PE Recovery or ROM.
 
 ## Historical deployment and verification
 
-Latest update (2026-10-06): the workspace's new menu reads `0x2924` blocks and its TWRP recheck
-reached ADB in 9.69 seconds with eight CPUs. The development baseline that recorded
-it was deleted on 2026-11-07; the retained menu-boot evidence is listed in the
-workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery).
+The workspace menu reads `0x2924` blocks; the October 6 menu item 3 recheck
+reached ADB in 9.69 seconds with eight CPUs. The retained menu-boot evidence is
+listed in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery).
 
 The haptics fix was built and published by GitHub Actions, then the downloaded
 Release FIT passed RAM testing and was deployed to cache on 2026-10-05.

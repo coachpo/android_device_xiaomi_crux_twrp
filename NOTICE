@@ -6,7 +6,6 @@ stock firmware of the Xiaomi Mi 9 Pro 5G (crux) for interoperability with the
 device's TrustZone / keymaster / gatekeeper / vibrator hardware:
 
   device/xiaomi/crux/recovery/root/system/bin/*
-  device/xiaomi/crux/recovery/root/system/lib64/*
   device/xiaomi/crux/recovery/root/vendor/lib64/*
   device/xiaomi/crux/recovery/root/vendor/firmware/*
 

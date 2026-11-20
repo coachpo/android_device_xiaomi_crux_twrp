@@ -35,6 +35,4 @@ SHA-256 与构建一致；recovery.log 记录 `y: 80 h: -80`、height scale
 默认偏移，需自行提供安全区；横屏不属于本轮要求。关闭增强时同时移除
 两项 offset，避免仅改变位置导致底部内容裁切。
 
-完整证据与 FIT 保存在工作区
-`out/twrp-crux-top-inset-2026-10-04/` 及发起 Codex 任务的
-`outputs/optional-display-inset/`。这些历史产物保留；当前已部署产物及验证边界见上述 Release 记录。
+工作区里的原始 inset 产物目录已于 2026-11-07 删除；当前已部署产物及验证边界见上述 Release 记录。

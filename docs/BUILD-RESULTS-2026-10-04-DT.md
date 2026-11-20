@@ -55,9 +55,9 @@ Crux source DTS disables the same unused extcon for future built overlays;
 host CPP/DTBO compilation confirms that one added property and unchanged
 primary USB. The kernel Image and config are unchanged.
 
-FIT/cache artifacts and complete hardware logs are in the workspace's
-`out/twrp-crux-pe-fixed-dt-2026-10-04/` record and the originating Codex task's
-`outputs/`. The FIT fits the same `0x293c` blocks. The updated cache payload
+The workspace's FIT/cache artifact directory for this record was deleted on
+2026-11-07; the retained Release supersedes it. The FIT fit the same `0x293c`
+blocks. The updated cache payload
 preserves every byte outside the TWRP FIT region, including MIUI, PE recovery
 and PE ROM. The user subsequently explicitly authorized this cache write.
 

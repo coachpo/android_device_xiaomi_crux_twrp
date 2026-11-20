@@ -1,57 +1,67 @@
 # Crux TWRP — Xiaomi Mi 9 Pro 5G (TWRP 3.7.1 / twrp-12.1)
 
-**Sealed artifact status (October 9, 2026):** the deployed October 5 Release `twrp-crux-3.7.1_12-37242105687-1` is retained as an independent historical baseline input. No new TWRP build or acceptance was added by the October 9 PE regression. See [the three-component sealing overview](../docs/rom-recovery-baseline-seal-status-2026-10-09.md) for exact identities and remaining limits. Public tier 1 uses a separately accepted PE Recovery set and does not include TWRP.
-
 Self-maintained TWRP device tree and build tooling for the Xiaomi Mi 9 Pro 5G
 (codename **crux**, SM8150 / msmnile).
+
+The retained TWRP is the GitHub Release
+`twrp-crux-3.7.1_12-37242105687-1` (source `8c10afbc879d`, FIT SHA-256
+`df812eef…`). It is the U-Boot cache-menu entry 3 and the CRC witness that the
+crux-install/1 installer checks; it is not an installer. Its identity, symbols
+and readbacks are in the workspace
+[component record](../docs/pe13-retained-components-2026-11-05.md#twrp-recovery)
+and its deployment in [RELEASE-DEPLOYMENT-2026-10-05.md](docs/RELEASE-DEPLOYMENT-2026-10-05.md).
+PE installation uses the separate RAM-only install TWRP (see the
+[workspace index](../docs/README.md)).
 
 | Item | Value |
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `kernel/xiaomi/crux` from branch `thirteen`; expected revision `d035d3881e3732bb8e56b5c251ca21f85cf4e404` — Linux **4.14.305** on the PE official Cepheus baseline (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`) plus the Crux migration commits. The manifest follows the branch; the build script only warns if the revision differs. The branch has since advanced to the tier 1 baseline commit `5e4950d2619f`; TWRP has not been rebuilt against it. |
-| Boot path | **All entries go through U-Boot**; TWRP is packed as a FIT and loaded from the cache partition by the U-Boot boot menu |
-| Status | **GitHub Release deployed on 2026-10-05:** signed build and downloaded assets verified, RAM test passed, cache full readback passed, ordinary U-Boot menu item 3 boot passed, eight CPUs and timed vibration verified. See [deployment record](docs/RELEASE-DEPLOYMENT-2026-10-05.md). |
+| Kernel | `coachpo/kernel_xiaomi_crux` branch `thirteen` (PE official Cepheus `f4048f154b51`, Linux **4.14.305**, plus the Crux migration). The retained Release was built at `e45a24f31ee0`. The manifest follows the branch and `scripts/build-twrp.sh` only warns when the checkout differs from its expected revision; see [KERNEL.md](docs/KERNEL.md) |
+| Boot path | All entries go through U-Boot; TWRP is a FIT loaded from the cache partition by the U-Boot boot menu |
+| Verification scope | [STATUS.md](docs/STATUS.md) |
 
-The deployed Release includes the corrected live DT, 80px top inset and haptics
-repair. The workspace's new U-Boot menu reads `0x2924` blocks and its TWRP
-recheck reached ADB in 9.69 seconds with eight CPUs; see the
-[development baseline](../docs/pe13-development-baseline-2026-10-05.md).
-Basic touch and vibration were accepted on the local RAM fix. Broader
-touch/keys, MTP, recovery operations and decryption remain unverified; see
-[current verification boundaries](docs/STATUS.md).
-U-Boot source and payload ownership is in `u-boot-port/`. This repository
-produces the FIT and its exact `boot_twrp` command for integration; it does not
-change the U-Boot checkout, flash cache or operate the device. See
-`docs/UBOOT.md` and the [workspace documentation index](../docs/README.md).
+The current build inputs differ from the retained Release's (kernel branch
+and expected revision, `crux-release.txt`). A build from this checkout is a new
+artifact that needs its own hardware test; it does not replace the retained
+FIT. U-Boot source and cache-payload ownership is in `u-boot-port/`. This
+repository produces the FIT and its exact `boot_twrp` command for integration;
+it does not change the U-Boot checkout, write cache or operate the device. See
+[UBOOT.md](docs/UBOOT.md).
 
 ## Repository layout
 
 ```text
 device/xiaomi/crux/          TWRP device tree (BoardConfig, product, recovery root)
-  prebuilt/live-dt/          ABL live device tree used by the proven TWRP FIT
-  recovery/root/             init scripts, fstab, twrp.flags, stock crypto blobs
+  prebuilt/live-dt/          ABL live device tree packaged into the FIT
+  recovery/root/             init scripts, fstab, twrp.flags, stock crypto/haptics blobs
 manifests/crux-twrp.xml      repo local manifest (device + kernel + pinned Prelude)
-scripts/setup-twrp.sh        repo init/sync a TWRP 12.1 tree
-scripts/build-twrp.sh        lunch twrp_crux-eng && mka recoveryimage
+patches/kernel/              board patch applied before the kernel build
+scripts/setup-twrp.sh        repo init/sync a TWRP 12.1 tree and copy the device tree
+scripts/build-twrp.sh        apply kernel patches, lunch twrp_crux-eng && mka recoveryimage
+scripts/apply-kernel-patches.sh  idempotent kernel patch application
 scripts/make-fit.sh          package recovery.img pieces into twrp-crux.itb
-scripts/insert-cache-payload.py   write the FIT into a cache payload copy
-docs/UBOOT.md                boot chain, FIT contract, cache layout
+scripts/package-release.py   verify FIT components and write release metadata
+.github/workflows/twrp-release.yml  CI build and GitHub Release
+docs/UBOOT.md                FIT contract and U-Boot handoff
 docs/KERNEL.md               kernel source integration and toolchain
+docs/CI-RELEASE.md           CI release contents
+docs/OFFICIAL-PRACTICES.md   comparison with official TWRP practice
+docs/HAPTICS.md              AW8697 haptics in recovery
+docs/DISPLAY-INSET.md        top display inset
 docs/DEVICE-TEST.md          on-device validation plan (read-only first)
-docs/STATUS.md               what is done, what is open
-docs/BUILD-RESULTS-2026-10-02.md   first successful build: sizes, hashes, fixes
+docs/STATUS.md               verified and open scope
+docs/BUILD-RESULTS-2026-10-04-DT.md   live-DT correction and first startup evidence
+docs/RELEASE-DEPLOYMENT-2026-10-05.md retained Release deployment record
 ```
 
 ## Requirements
 
 - x86_64 Linux userspace (the workspace's build VM is `cruxbuild`). About
-  150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`; the
-  first full sync used ~34 GB on top of the previously built tree.
+  150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`.
 - `repo` (Android repo launcher).
 - U-Boot `mkimage` for packaging the FIT (the crux U-Boot tree's
   `tools/mkimage`, or any U-Boot `mkimage` on `PATH`).
-- For later device work: `adb`, `fastboot`, and the EDL recovery path.
 
 ## Quick start
 
@@ -67,21 +77,30 @@ scripts/build-twrp.sh "$HOME/twrp-12.1"
 # 3. Package the U-Boot FIT (kernel compressed, live DT, recovery ramdisk)
 scripts/make-fit.sh --out-dir "$HOME/twrp-12.1/out/target/product/crux"
 #    output: out/fit-twrp/twrp-crux.itb + a new boot_twrp command line
-
-# 4. Prepare a cache payload copy for review; this does not write the device
-scripts/insert-cache-payload.py --fit out/fit-twrp/twrp-crux.itb \
-    --base ../out/crux-bootmenu-2026-10-02/cache-payload.img
 ```
 
 For quick kernel iterations, TWRP can reuse a recorded Cepheus 4.14.305 Image.
 Use the [prebuilt-kernel workflow](docs/KERNEL.md#toolchain) and record the
 selected artifact's source and working-tree changes.
 
+### Build notes
+
+These tree-integration choices are why the scripts look the way they do:
+
+| Issue | Handling |
+|---|---|
+| `build/envsetup.sh` aborts under `set -u` (`TOP: unbound variable`) | `build-twrp.sh` runs with `set -eo pipefail` |
+| A symlinked `device/xiaomi/crux` is not found by the AOSP product scan | `setup-twrp.sh` and `build-twrp.sh` copy the leaf directory with `rsync` |
+| `TARGET_COPY_OUT_VENDOR must be set to 'vendor'` | `BoardConfig.mk` sets `TARGET_COPY_OUT_VENDOR := vendor` |
+| `$(LOCAL_PATH)` in late-expanded variables resolves to `/` | use literal `device/xiaomi/crux/...` paths |
+| AOSP binutils cannot link the AArch64 kernel | the kernel uses Prelude's LLVM tools (`LLVM=1`, `ld.lld`, `llvm-*`); see [KERNEL.md](docs/KERNEL.md#toolchain) |
+
 ## GitHub Actions builds and releases
 
 Run **Actions → TWRP Recovery for crux → Run workflow** on `main` to build
 and publish a GitHub Release. Leave `release_tag` empty for a unique tag, or
 supply a new tag. Pushing a `twrp-crux-*` tag also triggers the workflow.
+Either needs release authorization.
 
 The workflow builds the PE Cepheus Crux kernel and recovery from source on
 Ubuntu 22.04, using the same pinned Prelude Clang 16.0.2 revision as the
@@ -99,53 +118,6 @@ The workflow packages TWRP; device cache integration and hardware flashing
 remain separate operations. A newly compiled release is not automatically
 hardware-tested.
 
-## Verified build (2026-10-02)
-
-`lunch twrp_crux-eng && mka recoveryimage` completed on the `cruxbuild` VM
-with the kernel built from source. Artifacts are archived in the workspace at
-`out/twrp-crux-2026-10-02/`:
-
-| Artifact | Size | SHA-256 |
-|---|---|---|
-| `recovery.img` | 128 MiB | `a715b1fb…b17217` |
-| `ramdisk-recovery.img` | 24,518,969 B | `59c006aa…c71e3f3` |
-| `kernel` (`Image-dtb`) | 50,441,476 B | `8cb961b1…4f38d1` |
-| `Image` (raw) | 48,443,408 B | `af1063fa…e86889` |
-| `twrp-crux.itb` | 44,398,928 B | `3170852a…335b23` |
-
-- Kernel banner: `Linux version 4.14.357-openela-Marisa-20260104-ksunext`
-  (clang 12.0.7, LLD 12.0.7).
-- TWRP identity: `3.7.1_12-crux-twrp-12.1`.
-- U-Boot FIT: `0x2a58` blocks (was `0x3486` for the proven 3.3.1 FIT), 22,177
-  KiB free in the 64 MiB TWRP cache slot.
-- Full report and the build fixes: `docs/BUILD-RESULTS-2026-10-02.md`.
-
-## Rebuilds (2026-10-03)
-
-Rebuilt twice after the kernel history cleanup. The first rebuild (pstore
-kernel) produced a 44,413,240 B / `0x2a5c` FIT (`5a731a98…`, see
-`docs/BUILD-RESULTS-2026-10-03.md`); the final rebuild used the branch tip
-`50443f853589` with the PE13 fixes and produced a 44,462,716 B / `0x2a68` FIT
-(SHA-256 `12c7c985…`, see `docs/BUILD-RESULTS-2026-10-03B.md`). Not
-device-tested.
-
-## Cepheus baseline rebuild (2026-10-04)
-
-The kernel baseline moved from the self-maintained 4.14.357-openela
-`thirteen-plus` line to the PE official Cepheus 4.14.305 baseline that PE13 now
-uses (`kernel/xiaomi/crux` checked out at `crux-pe13-cepheus`,
-`b38f5a5c8cac`) and the kernel is now built with the PE13 Prelude clang 16
-toolchain in LLVM mode. The recovery image and FIT were rebuilt against it
-(43,204,672 B / `0x2935` blocks, SHA-256 `2a0a2c7f…`; sizes and hashes in
-`docs/BUILD-RESULTS-2026-10-04.md`).
-
-On 2026-10-04 the FIT was written to the TWRP cache slot and the U-Boot
-`boot_twrp` command updated (new block count, `fdt_high`/`initrd_high` unset);
-the menu entry boots the FIT, but the Cepheus kernel stops after
-`Starting kernel` without re-enumerating USB/ADB — the same early-boot hang as
-the new-baseline PE recovery candidate. That initial failure is superseded by the DT correction and successful
-2026-10-04 device boot in [`BUILD-RESULTS-2026-10-04-DT.md`](docs/BUILD-RESULTS-2026-10-04-DT.md).
-
 ## Why twrp-12.1 and not a newer branch
 
 As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
@@ -156,7 +128,7 @@ As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
 - `android-13`, `android-14` and `android-14.1` exist in the TWRP repository
   but have **no official release** (`android-14.1` still identifies as
   `3.7.1_14`). They are a later, separate evaluation.
-- Linux 4.14 is **not** a documented TWRP ceiling. The current Cepheus
+- Linux 4.14 is **not** a documented TWRP ceiling. The Cepheus
   baseline's [kernel capabilities](docs/KERNEL.md#verified-kernel-capabilities-for-twrp)
   include Binder, encryption/ICE, UFS, DRM, USB and touch support; EROFS is
   disabled, and the device mounts system as ext4.

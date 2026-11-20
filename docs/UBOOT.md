@@ -27,58 +27,24 @@ the two kernel parameters set before prep; a menu entry alone does not stop
 Linux from taking over and feeding the watchdog. Generated FIT commands are
 handoff material for the U-Boot integration owner, who applies that gate.
 
-## Historical menu and layout evidence
+## Cache slot and menu entry
 
-Source: `u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env`.
-
-The legacy commands and source-state descriptions below preserve the earlier
-integration evidence. They are not current watchdog-protected debug recipes;
-use the guide above and the block count of the FIT actually deployed.
-
-The earlier MIUI/TWRP-only checkpoint used the hardware-verified
-`ub-crux-bootmenu.img` and cache payload below. Its historical source-state
-description also recorded uncommitted PE
-menu entries and an uncommitted `boot/bootm.c` change to reserve the arm64
-kernel's full BSS footprint. Those changes and their candidate image had
-not yet been rebuilt together, flashed or device-verified in that earlier record.
+The cache partition is UFS LUN0 with 4096-byte blocks. The guarded menu reads
+four FIT slots: MIUI `0x30000`, TWRP `0x34000`, PE Recovery `0x38000` and PE ROM
+`0x3c000`; the read counts are capacities, not authorized write ranges (see the
+workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#u-boot)).
+The deployed `boot_twrp` reads the retained Release's `0x2924` blocks:
 
 ```text
-cache partition: UFS LUN0, 4096-byte blocks, starts at LBA 0x30000
-  0x00000000  miui-menu.itb      MIUI            (stock kernel + official DT)
-  0x04000000  twrp-menu.itb      TWRP            (proven TWRP 3.3.1 + live DT)
-
-# Legacy, hardware-tested 3.3.1 entry; a newly built FIT needs a new block count:
-boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 0x3486; setenv fdt_high 0x84900000; setenv initrd_high 0x84200000; bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; bootm go
+boot_twrp=scsi dev 0; scsi read 0xC0000000 0x34000 0x2924; setenv fdt_high; setenv initrd_high; bootm start 0xC0000000; bootm loados; bootm ramdisk; bootm prep; run boot_go
 ```
 
-Address contract used by the FIT:
-
-| Component | Load / entry |
-|---|---|
-| kernel | `0x80080000` (load and entry) |
-| ramdisk | `0x83000000` |
-| fdt | `0x84800000` |
-| `fdt_high` | `0x84900000` |
-| `initrd_high` | `0x84200000` |
-
-`scsi read 0xC0000000 0x34000 <blocks>` reads a TWRP FIT from cache LBA
-`0x34000` (64 MiB into the payload); `<blocks>` is the FIT size in 4096-byte
-blocks. The proven 3.3.1 FIT was `0x3486` blocks (55,074,356 bytes). The
-first TWRP 3.7.1 build (2026-10-02) was `0x2a58` blocks (44,398,928 bytes,
-see `BUILD-RESULTS-2026-10-02.md`); the 2026-10-03 pstore rebuild was
-`0x2a5c` blocks (44,413,240 bytes, see `BUILD-RESULTS-2026-10-03.md`), the
-final 2026-10-03 rebuild with the PE13 kernel fixes is `0x2a68` blocks
-(44,462,716 bytes, see `BUILD-RESULTS-2026-10-03B.md`), and the 2026-10-04
-Cepheus-baseline build is `0x2935` blocks (43,204,672 bytes, see
-`BUILD-RESULTS-2026-10-04.md`). Integration must verify that the menu's read
-count covers the deployed FIT.
-Those descriptions refer to dated payloads and are superseded by the current
-four-slot cache layout. The 2026-10-04 fixed2 FIT used `0x293c` blocks, and its
-corrected DT replacement kept that count. The 2026-10-05 Release uses `0x2924`;
-the then-existing `0x293c` menu read was sufficient, so that deployment needed
-no environment change. The current workspace menu now reads `0x2924`.
-Use the current baseline above for the menu and cache layout; preserve each
-MIUI, TWRP, PE Recovery and PE ROM payload region during an authorized update.
+The FIT loads the kernel at `0x80080000` (load and entry), the ramdisk at
+`0x83000000` and the FDT at `0x84800000`. `fdt_high` and `initrd_high` stay
+unset so U-Boot can relocate the Cepheus Image and the 24.5 MiB ramdisk.
+Integration must verify that the menu's read count covers the deployed FIT and
+preserve every MIUI, PE Recovery and PE ROM payload region during an authorized
+update.
 
 ## What this repository produces
 
@@ -98,10 +64,10 @@ command must leave `fdt_high`/`initrd_high` unset (`setenv fdt_high; setenv
 initrd_high;`): the Cepheus kernel reserves its full `image_size` and the
 24.5 MiB ramdisk does not fit below the old low `initrd_high=0x84200000`. If
 the FIT exceeds 64 MiB it warns
-and the cache-payload layout has to be renegotiated. The 2026-10-02 build
-packaged the raw `Image` (48,443,408 B, `af1063fa…`) with the separate live DT;
-`BoardConfig.mk` still names `Image-dtb` for the recovery image. Re-check the
-selected kernel artifact after any build-config change.
+and the cache-payload layout has to be renegotiated. `make-fit.sh` packages the
+raw `Image` with the separate live DT, while `BoardConfig.mk` still names
+`Image-dtb` for the Android recovery image. Re-check the selected kernel
+artifact after any build-config change.
 
 ## Ownership boundary
 
@@ -109,16 +75,15 @@ U-Boot source and cache-payload integration belong to `u-boot-port/`. This
 repository produces a FIT and handoff material only; it must **not** edit:
 
 - `u-boot-port/src/u-boot-next/**` (including `board/qualcomm/xiaomi-crux.env`),
-- `out/crux-bootmenu-2026-10-02/cache-payload.img` or the device.
+- any cache image or the device.
 
 When the image is ready for hardware, hand over:
 
-1. `out/fit-twrp/twrp-crux.itb` (with SHA-256),
-2. the generated `boot_twrp=...` line (the block count changes),
-3. optionally a payload copy produced by `scripts/insert-cache-payload.py`.
+1. `out/fit-twrp/twrp-crux.itb` (with SHA-256 and block count),
+2. the generated `boot_twrp=...` line (the block count changes).
 
 The U-Boot integration work then updates the environment and, when explicitly
-authorized, writes the payload.
+authorized, writes the cache slot.
 
 ## Live device tree
 
@@ -139,10 +104,3 @@ Node presence does not establish complete touch or decryption support; use
 working recovery and read `/sys/firmware/fdt`, or build a DT from the kernel
 sources (`sm8150-v2.dtb` + `crux-sm8150-overlay.dtbo`) and patch
 `/chosen/bootargs` before packaging.
-
-## Ramoops note (historical)
-
-The old U-Boot injected a duplicate `ramoops@b0000000` node, which crashed the
-TWRP 3.3.1 kernel. The fixed U-Boot no longer does this; the TWRP FIT no longer
-needs the `fdt rm /reserved-memory/ramoops@b0000000` workaround. If an older
-U-Boot is used, that removal must happen after `bootm prep`.
