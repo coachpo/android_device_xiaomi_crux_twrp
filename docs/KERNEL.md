@@ -14,27 +14,23 @@ The kernel is **not** stored in this repository. TWRP's inline kernel build
 | `BOARD_KERNEL_IMAGE_NAME` | `Image-dtb` |
 | `BOARD_KERNEL_SEPARATED_DTBO` | `true` |
 
-The manifest follows branch `thirteen` and the build script warns when
-the checkout differs from the expected revision; it does not pin the commit:
+The manifest pins the kernel at the commit the PE13 source lock pins
+(`coachpo/crux-pe13-distributed` `config/cloud-source-manifest.json`), so TWRP
+and PE build the same kernel source. `scripts/kernel-pin.py` prints it, and
+`scripts/build-twrp.sh` refuses another checkout or tracked changes:
 
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="crux-github"
-         revision="thirteen" clone-depth="1" />
+         revision="2a6319afbb1b9d7d29f7868eda5de27e63e0f2d9" upstream="thirteen"
+         clone-depth="1" />
 ```
 
-The expected revision in `scripts/build-twrp.sh` is
-`d035d3881e3732bb8e56b5c251ca21f85cf4e404`. It is neither the retained
-Release's kernel nor the current branch tip: the retained TWRP Image was built
-at `e45a24f31ee0` and reported
-
-```text
-Linux version 4.14.305-Crux-PE-ge45a24f31ee0
-```
-
-and the PE source lock now pins `thirteen` at `086b838e3a50`. No TWRP build
-against either later revision is recorded. The commit warning does not
-check working-tree changes, so each build also needs its source patch.
+Bump it together with the PE lock. With `CRUX_KERNEL_SOURCE=<checkout>`,
+`scripts/setup-twrp.sh` makes `kernel/xiaomi/crux` a detached worktree of an
+existing kernel checkout instead of a second clone. The retained Release's
+TWRP Image was built at `e45a24f31ee0`
+(`Linux version 4.14.305-Crux-PE-ge45a24f31ee0`).
 
 It is the official PE Cepheus source
 (`PixelExperience-Devices/kernel_xiaomi_cepheus` `f4048f154b51`, branch

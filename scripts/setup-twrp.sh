@@ -16,6 +16,9 @@
 #                  project is not fetched from GitHub; files are copied to
 #                  device/xiaomi/crux instead (useful while developing this
 #                  repository in place).
+#   CRUX_KERNEL_SOURCE  Existing kernel_xiaomi_crux checkout. When set, the
+#                  kernel project is not cloned; kernel/xiaomi/crux becomes a
+#                  detached git worktree of it at the manifest pin.
 #
 set -euo pipefail
 
@@ -23,6 +26,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TREE="${1:-$PWD/twrp-12.1}"
 TWRP_BRANCH="${TWRP_BRANCH:-twrp-12.1}"
 LOCAL_DEVICE="${LOCAL_DEVICE:-}"
+CRUX_KERNEL_SOURCE="${CRUX_KERNEL_SOURCE:-}"
 
 if ! command -v repo >/dev/null 2>&1; then
     echo "error: 'repo' is not in PATH (install the Android repo launcher first)" >&2
@@ -48,24 +52,30 @@ MANIFEST_DIR="$TREE/.repo/local_manifests"
 mkdir -p "$MANIFEST_DIR"
 
 cp "$REPO_ROOT/manifests/crux-twrp.xml" "$MANIFEST_DIR/crux-twrp.xml"
-if [ -n "$LOCAL_DEVICE" ]; then
-    echo "==> using local device tree: $LOCAL_DEVICE"
-    python3 - "$MANIFEST_DIR/crux-twrp.xml" <<'PY_MANIFEST'
+python3 - "$MANIFEST_DIR/crux-twrp.xml" "$LOCAL_DEVICE" "$CRUX_KERNEL_SOURCE" <<'PY_MANIFEST'
 import sys
 import xml.etree.ElementTree as ET
-path = sys.argv[1]
+path, local_device, kernel_source = sys.argv[1:]
 tree = ET.parse(path)
 for project in list(tree.getroot().findall("project")):
-    if project.get("name") == "coachpo/android_device_xiaomi_crux_twrp":
+    if (local_device and project.get("name") == "coachpo/android_device_xiaomi_crux_twrp") or \
+            (kernel_source and project.get("path") == "kernel/xiaomi/crux"):
         tree.getroot().remove(project)
 tree.write(path, encoding="utf-8", xml_declaration=True)
 PY_MANIFEST
-else
-    echo "==> using device tree from GitHub (coachpo/android_device_xiaomi_crux_twrp)"
-fi
+echo "==> device tree: ${LOCAL_DEVICE:-GitHub coachpo/android_device_xiaomi_crux_twrp}"
 
 echo "==> repo sync (-j$JOBS, this downloads the TWRP 12.1 tree)"
 repo sync -c --no-clone-bundle --no-tags -j"$JOBS"
+
+if [ -n "$CRUX_KERNEL_SOURCE" ]; then
+    KERNEL_PIN="$(python3 "$REPO_ROOT/scripts/kernel-pin.py")"
+    if [ ! -e "$TREE/kernel/xiaomi/crux" ]; then
+        git -C "$CRUX_KERNEL_SOURCE" worktree add --detach "$TREE/kernel/xiaomi/crux" "$KERNEL_PIN"
+    fi
+    git -C "$TREE/kernel/xiaomi/crux" checkout --detach "$KERNEL_PIN"
+    echo "==> kernel: worktree of $CRUX_KERNEL_SOURCE at $KERNEL_PIN"
+fi
 
 # The repository includes scripts/docs above device/xiaomi/crux. AOSP needs
 # the leaf device directory, not the repository root or a symlink to it.

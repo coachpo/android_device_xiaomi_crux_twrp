@@ -36,10 +36,9 @@ device/xiaomi/crux/          TWRP device tree (BoardConfig, product, recovery ro
   prebuilt/live-dt/          ABL live device tree packaged into the FIT
   recovery/root/             init scripts, fstab, twrp.flags, stock crypto/haptics blobs
 manifests/crux-twrp.xml      repo local manifest (device + kernel + pinned Prelude)
-patches/kernel/              board patch applied before the kernel build
 scripts/setup-twrp.sh        repo init/sync a TWRP 12.1 tree and copy the device tree
 scripts/build-twrp.sh        apply kernel patches, lunch twrp_crux-eng && mka recoveryimage
-scripts/apply-kernel-patches.sh  idempotent kernel patch application
+scripts/kernel-pin.py        print the kernel commit the manifest pins
 scripts/make-fit.sh          package recovery.img pieces into twrp-crux.itb
 scripts/package-release.py   verify FIT components and write release metadata
 .github/workflows/twrp-release.yml  CI build and GitHub Release

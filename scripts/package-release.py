@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -94,9 +95,9 @@ def package(args):
     clang = tree / "prebuilts/clang/host/linux-x86/clang-prelude"
     compiler = run([str(clang / "bin/clang"), "--version"])
     assert "16.0.2" in compiler, "Expected the verified Prelude Clang 16.0.2"
-    patches = {p.name: sha(p) for p in sorted((ROOT / "patches/kernel").glob("*.patch"))}
-    for patch in sorted((ROOT / "patches/kernel").glob("*.patch")):
-        run(["git", "-C", str(tree / "kernel/xiaomi/crux"), "apply", "--reverse", "--check", str(patch)])
+    kernel_commit = revision(tree / "kernel/xiaomi/crux")
+    assert kernel_commit == run([sys.executable, str(ROOT / "scripts/kernel-pin.py")]).strip(), \
+        "kernel/xiaomi/crux is not the manifest pin"
     soong = json.loads((tree / "out/soong/soong.variables").read_text())
     offsets = soong["VendorVars"]["twrpGlobalVars"]
     assert (offsets["tw_y_offset"], offsets["tw_h_offset"]) == ("80", "-80")
@@ -109,8 +110,7 @@ def package(args):
         "device": "crux", "twrp_version": VERSION, "release_tag": args.release_tag,
         "built_at_utc": datetime.now(timezone.utc).isoformat(),
         "device_source_commit": revision(ROOT),
-        "kernel_source_commit": revision(tree / "kernel/xiaomi/crux"),
-        "kernel_patches_sha256": patches,
+        "kernel_source_commit": kernel_commit,
         "kernel_config_sha256": sha(config), "raw_image_sha256": sha(image),
         "live_dtb_sha256": sha(dt), "toolchain_commit": revision(clang),
         "compiler": compiler, "top_inset_px": 80, "fit_blocks": f"0x{blocks:x}",

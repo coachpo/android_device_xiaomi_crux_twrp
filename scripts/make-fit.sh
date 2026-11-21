@@ -159,17 +159,22 @@ cat > "$ITS" <<EOF
 EOF
 
 if [ -z "$MKIMAGE" ]; then
-    for cand in "$REPO_ROOT/../crux-uboot/.output-tools/tools/mkimage" "$PWD/tools/mkimage"; do
-        if [ -x "$cand" ]; then MKIMAGE="$cand"; break; fi
+    # The Crux U-Boot host tool first. Accept only a binary for this host's
+    # format: OrbStack runs the Mac build from the VM, but it cannot see VM paths.
+    case "$(uname -s)" in
+        Linux) MAGIC=7f454c46 ;;
+        Darwin) MAGIC=cffaedfe ;;
+        *) MAGIC= ;;
+    esac
+    for cand in "$REPO_ROOT/../crux-uboot/.output-crux/xiaomi-crux/tools/mkimage" "$(command -v mkimage || true)"; do
+        if [ -n "$cand" ] && [ -x "$cand" ] && { [ -z "$MAGIC" ] || [ "$(head -c 4 "$cand" | od -An -tx1 | tr -d ' \n')" = "$MAGIC" ]; }; then
+            MKIMAGE="$cand"; break
+        fi
     done
 fi
 if [ -z "$MKIMAGE" ]; then
-    if command -v mkimage >/dev/null 2>&1; then
-        MKIMAGE="$(command -v mkimage)"
-    else
-        echo "error: mkimage not found; pass --mkimage or build the crux U-Boot tools" >&2
-        exit 1
-    fi
+    echo "error: no runnable mkimage; pass --mkimage, install u-boot-tools or build crux-uboot/tools/crux" >&2
+    exit 1
 fi
 
 echo "==> mkimage ($MKIMAGE)"

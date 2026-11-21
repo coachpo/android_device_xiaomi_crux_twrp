@@ -46,16 +46,18 @@ if [ -n "${LOCAL_DEVICE:-}" ]; then
     fi
 fi
 
-EXPECTED_KERNEL_SHA="d035d3881e3732bb8e56b5c251ca21f85cf4e404"
-if [ -d kernel/xiaomi/crux/.git ]; then
+KERNEL_PIN="$(python3 "$REPO_ROOT/scripts/kernel-pin.py")"
+if [ -z "${TARGET_PREBUILT_KERNEL:-}" ]; then
     ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
-    if [ "$ACTUAL_KERNEL_SHA" != "$EXPECTED_KERNEL_SHA" ]; then
-        echo "warning: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-unknown}" >&2
-        echo "         expected $EXPECTED_KERNEL_SHA (Linux 4.14.305 Cepheus baseline)" >&2
+    if [ "$ACTUAL_KERNEL_SHA" != "$KERNEL_PIN" ]; then
+        echo "error: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-no checkout}, manifest pins $KERNEL_PIN" >&2
+        exit 1
+    fi
+    if [ -n "$(git -C kernel/xiaomi/crux status --porcelain --untracked-files=no)" ]; then
+        echo "error: kernel/xiaomi/crux has tracked changes" >&2
+        exit 1
     fi
 fi
-
-"$REPO_ROOT/scripts/apply-kernel-patches.sh" "$TREE/kernel/xiaomi/crux"
 
 export ALLOW_MISSING_DEPENDENCIES=true
 export LC_ALL=C

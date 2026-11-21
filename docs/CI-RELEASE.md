@@ -29,14 +29,12 @@ fresh tag, or remove that failed draft before explicitly reusing its tag.
 - TWRP minimal manifest branch `twrp-12.1`.
 - Device files from the exact triggering checkout, copied from this
   repository's `device/xiaomi/crux` leaf directory.
-- `coachpo/kernel_xiaomi_crux`, branch `thirteen`; expected revision
-  `d035d3881e3732bb8e56b5c251ca21f85cf4e404`. As with local builds this remains
-  a branch selection and a warning check, rather than a pin.
+- `coachpo/kernel_xiaomi_crux` at the manifest pin (the PE13 source lock's
+  kernel commit); the build refuses another checkout.
 - Prelude Clang 16.0.2 from `jjpprrrr/prelude-clang` on GitLab, pinned to
   `ac8fce34dc0f6918672100d7a6e867a66b8afa8f`.
-- `patches/kernel/0001-disable-unused-usb1-extcon.patch`, applied before kernel
-  compilation; the captured live DT already carries the UFS ICE resource and
-  USB1 extcon corrections.
+- The board USB1 extcon correction is part of the pinned kernel; the captured
+  live DT already carries the UFS ICE resource and USB1 extcon corrections.
 - Built-in portrait theme with the 80px top content inset. The optional inset
   changes recovery UI; it does not change kernel display timing.
 
