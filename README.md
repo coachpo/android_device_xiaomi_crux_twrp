@@ -141,6 +141,10 @@ As of 2026-10-02, the official TeamWin release page lists TWRP 3.7.1
 decryption and haptics (`qseecomd`, keymaster 4.0, gatekeeper 1.0, vibrator,
 their `lib64` dependencies and firmware). They come from the device's stock
 firmware via the community crux TWRP device tree (TWRP A12.1). See `NOTICE`.
+They stay in this repository rather than being taken from `vendor_xiaomi_crux`:
+that repository's blobs come from another firmware line (PixelExperience-Blobs
+and V10.4.6.0), and `qseecomd` and the gatekeeper service differ from these; TWRP
+decryption is only known to work with this set.
 
 The kernel is **not** committed; it is built from
 `coachpo/kernel_xiaomi_crux` (the PE13 Cepheus baseline line).
