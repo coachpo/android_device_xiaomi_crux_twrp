@@ -29,7 +29,7 @@ authorization for the specific operation.
 
 Run only after the new FIT has been built and integrated. If integration requires writing the cache or boot partition, obtain explicit authorization for that write first.
 
-- Before a debug kernel boot, the U-Boot integration owner must pass the [watchdog recovery gate](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md): verify the deployed handoff arms the timer and recovery leaves the menu waiting. Unattended hang diagnosis needs the documented kernel parameters before `bootm prep` or the returning-probe `--watchdog` mode; ordinary kernel takeover can keep feeding despite an initcall stall. If recovery setup fails, repair and verify it before further debug launches.
+- Before a debug kernel boot, the U-Boot integration owner must pass the watchdog recovery gate (Obsidian 《Crux 内核调试 watchdog 流程》): verify the deployed handoff arms the timer and recovery leaves the menu waiting. Unattended hang diagnosis needs the documented kernel parameters before `bootm prep` or the returning-probe `--watchdog` mode; ordinary kernel takeover can keep feeding despite an initcall stall. If recovery setup fails, repair and verify it before further debug launches.
 - Keep bounded diagnostic boots distinct from normal UI/function validation. The diagnostic parameters prevent kernel takeover and impose a timeout even on a healthy kernel; normal validation needs normal watchdog ownership. Record full bootargs, timer setting, firmware/USB recovery timing and whether a checkpoint was captured or the device reset.
 - Select TWRP from the U-Boot menu.
 - Record the splash/UI, `adb devices`, `ro.twrp.version`, `ro.product.device`, and the U-Boot console output.
@@ -79,6 +79,6 @@ Wiping metadata, formatting `/data`, flashing boot/dtbo, or restoring data chang
 
 ## Failure recovery
 
-Use the verified automatic watchdog path for kernel diagnostic hangs; see the [watchdog guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md). A watchdog reset to U-Boot is recovery evidence, not a successful TWRP boot or a returning-probe hit. Capture same-boot probe logs before another reset; do not infer the prior checkpoint from RAM read after reset. Manual power reset is a way to regain control to repair a failed recovery path, not the routine for each experiment.
+Use the verified automatic watchdog path for kernel diagnostic hangs; see the watchdog guide (Obsidian 《Crux 内核调试 watchdog 流程》). A watchdog reset to U-Boot is recovery evidence, not a successful TWRP boot or a returning-probe hit. Capture same-boot probe logs before another reset; do not infer the prior checkpoint from RAM read after reset. Manual power reset is a way to regain control to repair a failed recovery path, not the routine for each experiment.
 
 The bootloader and EDL recovery route are documented elsewhere, but they do not make an unverified write safe. Confirm the device's current mode and target before any recovery write; use the U-Boot handoff and the dated EDL record for their respective states.

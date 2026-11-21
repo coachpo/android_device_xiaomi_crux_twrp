@@ -159,7 +159,7 @@ cat > "$ITS" <<EOF
 EOF
 
 if [ -z "$MKIMAGE" ]; then
-    for cand in "$REPO_ROOT/../u-boot-port/src/u-boot-next/tools/mkimage" "$PWD/tools/mkimage"; do
+    for cand in "$REPO_ROOT/../crux-uboot/.output-tools/tools/mkimage" "$PWD/tools/mkimage"; do
         if [ -x "$cand" ]; then MKIMAGE="$cand"; break; fi
     done
 fi

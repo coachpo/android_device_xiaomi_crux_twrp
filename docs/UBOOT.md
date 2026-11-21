@@ -14,12 +14,12 @@ The current artifact is the [2026-10-05 GitHub Release](RELEASE-DEPLOYMENT-2026-
 with PE Cepheus 4.14.305, TWRP 3.7.1, corrected live DT, top inset and haptics.
 The new workspace U-Boot menu reads its exact `0x2924` blocks; the ordinary
 menu item 3 recheck reached ADB in 9.69 seconds with eight CPUs. See the
-workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery)
-and [`boot_twrp` source](../../u-boot-port/src/u-boot-next/board/qualcomm/xiaomi-crux.env).
+workspace component record (Obsidian 《Crux 组件身份与保留件》)
+and [`boot_twrp` source](../../crux-uboot/board/qualcomm/xiaomi-crux.env).
 The [2026-10-04 DT result](BUILD-RESULTS-2026-10-04-DT.md) retains the first
 startup evidence. Physical touch/haptics acceptance and untested functions
 are distinguished in [STATUS.md](STATUS.md).
-Current debug boots follow the [watchdog recovery guide](../../u-boot-port/notes/KERNEL-DEBUG-WATCHDOG.md).
+Current debug boots follow the watchdog recovery guide (Obsidian 《Crux 内核调试 watchdog 流程》).
 
 Use a checked `run boot_go` handoff or explicitly arm and check the timer
 immediately before a direct debug `bootm go`. Unattended diagnosis also needs
@@ -32,7 +32,7 @@ handoff material for the U-Boot integration owner, who applies that gate.
 The cache partition is UFS LUN0 with 4096-byte blocks. The guarded menu reads
 four FIT slots: MIUI `0x30000`, TWRP `0x34000`, PE Recovery `0x38000` and PE ROM
 `0x3c000`; the read counts are capacities, not authorized write ranges (see the
-workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#u-boot)).
+workspace component record, Obsidian 《Crux 组件身份与保留件》).
 The deployed `boot_twrp` reads the retained Release's `0x2924` blocks:
 
 ```text
@@ -71,10 +71,10 @@ artifact after any build-config change.
 
 ## Ownership boundary
 
-U-Boot source and cache-payload integration belong to `u-boot-port/`. This
+U-Boot source and cache-payload integration belong to the workspace `crux-uboot/` and its integration owner. This
 repository produces a FIT and handoff material only; it must **not** edit:
 
-- `u-boot-port/src/u-boot-next/**` (including `board/qualcomm/xiaomi-crux.env`),
+- `crux-uboot/**` (including `board/qualcomm/xiaomi-crux.env`),
 - any cache image or the device.
 
 When the image is ready for hardware, hand over:

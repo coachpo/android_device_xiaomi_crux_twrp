@@ -2,7 +2,7 @@
 
 ## Retained Release
 
-The October 5 deployed Release is the retained cache TWRP entry and CRC witness in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery). It has not been rebuilt or revalidated since. Signed TWRP ZIP installs use the separate RAM-only install TWRP v3; the host direct installer uses RAM-only TWRP v2.
+The October 5 deployed Release is the retained cache TWRP entry and CRC witness in the workspace component record (Obsidian 《Crux 组件身份与保留件》). It has not been rebuilt or revalidated since. Signed TWRP ZIP installs use the separate RAM-only install TWRP v3; the host direct installer uses RAM-only TWRP v2.
 
 | Identity | Value |
 | --- | --- |
@@ -20,7 +20,7 @@ Installed Release final physical UI feedback, broad touch/keyboard, MTP, decrypt
 
 The workspace menu reads `0x2924` blocks; the October 6 menu item 3 recheck
 reached ADB in 9.69 seconds with eight CPUs. The retained menu-boot evidence is
-listed in the workspace [component record](../../docs/pe13-retained-components-2026-11-05.md#twrp-recovery).
+listed in the workspace component record (Obsidian 《Crux 组件身份与保留件》).
 
 The haptics fix was built and published by GitHub Actions, then the downloaded
 Release FIT passed RAM testing and was deployed to cache on 2026-10-05.

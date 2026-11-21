@@ -8,10 +8,10 @@ The retained TWRP is the GitHub Release
 `df812eef…`). It is the U-Boot cache-menu entry 3 and the CRC witness that the
 crux-install/1 installer checks; it is not an installer. Its identity, symbols
 and readbacks are in the workspace
-[component record](../docs/pe13-retained-components-2026-11-05.md#twrp-recovery)
+component record (Obsidian 《Crux 组件身份与保留件》)
 and its deployment in [RELEASE-DEPLOYMENT-2026-10-05.md](docs/RELEASE-DEPLOYMENT-2026-10-05.md).
 PE installation uses the separate RAM-only install TWRP (see the
-[workspace index](../docs/README.md)).
+workspace notes, Obsidian 《Crux 00 总览》).
 
 | Item | Value |
 |---|---|
@@ -24,7 +24,7 @@ PE installation uses the separate RAM-only install TWRP (see the
 The current build inputs differ from the retained Release's (kernel branch
 and expected revision, `crux-release.txt`). A build from this checkout is a new
 artifact that needs its own hardware test; it does not replace the retained
-FIT. U-Boot source and cache-payload ownership is in `u-boot-port/`. This
+FIT. U-Boot source and cache-payload ownership is in the workspace `crux-uboot/`. This
 repository produces the FIT and its exact `boot_twrp` command for integration;
 it does not change the U-Boot checkout, write cache or operate the device. See
 [UBOOT.md](docs/UBOOT.md).

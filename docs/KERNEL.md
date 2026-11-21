@@ -42,7 +42,7 @@ It is the official PE Cepheus source
 board correction is now committed in the maintained kernel source. The
 previously verified Image and DT-only repair are recorded in
 [`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The retained offline bundle of the maintained `thirteen` branch is described
-in the workspace [kernel repository status](../../docs/kernel-repository-maintenance-2026-10-06.md).
+in Obsidian 《Crux 内核与 TWRP》.
 
 ## Toolchain
 
