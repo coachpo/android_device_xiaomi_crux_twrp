@@ -82,6 +82,33 @@ For quick kernel iterations, TWRP can reuse a recorded Cepheus 4.14.305 Image.
 Use the [prebuilt-kernel workflow](docs/KERNEL.md#toolchain) and record the
 selected artifact's source and working-tree changes.
 
+### RAM-only UI candidate (host packaging)
+
+For display, input, vibration and recovery ADB tests without physical storage,
+use the separate local RAM UI profile. It is neither the cache TWRP nor the
+signed ZIP installer, and it has no backup, decryption or flash volumes.
+
+1. On Linux, run `scripts/build-ram-ui-kernel.sh TWRP_TREE NEW_KERNEL_OUT`.
+   It uses the existing TWRP build's `.config` as a baseline and builds a
+   separate `NEW_KERNEL_OUT/arch/arm64/boot/Image` from the pinned kernel.
+2. Run `python3 scripts/package-ram-ui.py --source-fit ORIGINAL_FIT
+   --source-fit-sha256 ORIGINAL_SHA256 --kernel RAW_IMAGE --mkimage MKIMAGE
+   --dumpimage DUMPIMAGE --out NEW_DIR` with `fdtget` and `fdtput` on `PATH`.
+   The output contains the FIT, embedded kernel config, verification metadata
+   and checksums. The recipe does not create `recovery.img` or a cache command.
+
+The profile omits the UFS, MMC, USB-storage and loadable-module paths, disables
+the internal storage controllers in its DT and removes the DT mount table.
+It uses a private RAM file for `/misc` instead of the physical BCB and removes
+decryption init routes. A RAM `/TWRP/.twrpcf` marker lets TeamWin discover its
+default settings folder without trying to mount a nonexistent storage volume.
+The original TWRP UI, USB gadget and haptics userspace
+are retained; the USB controller stays `dr_mode = "otg"` as in the source DT
+(the MSM DWC3 gadget ignores VBUS in `peripheral` mode and never enumerates). Packaging checks the selected FIT components and scans the
+expanded kernel and ramdisk for the original device identity and host paths.
+Physical UI, touch, haptics and ADB still require a separately authorized,
+watchdog-protected RAM boot from the Recovery container; never flash this FIT.
+
 ### Build notes
 
 These tree-integration choices are why the scripts look the way they do:
