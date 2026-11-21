@@ -81,6 +81,7 @@ if [ -z "$DT" ]; then
     DT="$REPO_ROOT/device/xiaomi/crux/prebuilt/live-dt/twrp-live.dtb"
 fi
 [ -f "$DT" ] || { echo "error: device tree not found: $DT" >&2; exit 1; }
+python3 "$REPO_ROOT/scripts/crux_identity.py" check "$DT"
 
 if [ -z "$OUT" ]; then OUT="$REPO_ROOT/out/fit-twrp/twrp-crux.itb"; fi
 mkdir -p "$(dirname "$OUT")"

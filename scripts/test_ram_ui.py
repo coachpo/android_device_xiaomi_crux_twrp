@@ -4,6 +4,7 @@ from pathlib import Path
 import stat
 import unittest
 
+import crux_identity
 from ram_ui_archive import DROP_CRYPTO, DROP_RC, FLAGS, FSTAB, QCOM_RC, SINK, TWRP_FOLDER, TWRP_MARKER, new_entry
 
 
@@ -66,9 +67,18 @@ class RamUiContract(unittest.TestCase):
                 b"androidboot.bootdevice=ufs androidboot.usbcontroller=a600000.dwc3 androidboot.usbconfigfs=true\0")
         clean, private = packer.sanitize_bootargs(args)
         self.assertEqual("androidboot.usbcontroller=a600000.dwc3 androidboot.usbconfigfs=true", clean)
-        counts = packer.privacy_check({"initramfs": b"log test-storage-id /Users/example/source"}, private)
+        user = packer.getpass.getuser()
+        counts = packer.privacy_check(
+            {"initramfs": f"log test-storage-id /Users/example/source ro.build.user={user}".encode()}, private)
         self.assertEqual(1, counts["initramfs"]["androidboot.ufsid"])
-        self.assertEqual(1, counts["initramfs"]["macOS home"])
+        self.assertEqual(1, counts["initramfs"]["/Users/"])
+        self.assertEqual(1, counts["initramfs"]["build.prop user"])
+
+    def test_release_dt_carries_no_abl_identity(self):
+        dt = Path(__file__).resolve().parents[1] / "device/xiaomi/crux/prebuilt/live-dt/twrp-live.dtb"
+        self.assertEqual([], crux_identity.identity_keys(crux_identity.dt_bootargs(dt)))
+        self.assertEqual(["androidboot.serialno", "msm_drm.dsi_display0"], crux_identity.identity_keys(
+            "ro androidboot.serialno=x msm_drm.dsi_display0=panel: androidboot.bootdevice=1d84000.ufshc"))
 
 
 if __name__ == "__main__":

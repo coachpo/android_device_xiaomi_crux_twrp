@@ -83,6 +83,13 @@ TARGET_KERNEL_ADDITIONAL_FLAGS += \
     OBJCOPY=$(TARGET_KERNEL_CLANG_BIN)/llvm-objcopy \
     OBJDUMP=$(TARGET_KERNEL_CLANG_BIN)/llvm-objdump \
     STRIP=$(TARGET_KERNEL_CLANG_BIN)/llvm-strip
+# Keep the build host out of the kernel: the kernel Makefile maps the source
+# prefix only for C files, so assembler __FILE__ strings (entry.S) need KAFLAGS;
+# the banner takes a neutral user and host. Ninja does not pass KBUILD_* from the
+# shell environment, so these are make arguments.
+TARGET_KERNEL_ADDITIONAL_FLAGS += \
+    KAFLAGS=-fmacro-prefix-map=$(shell cd $(TARGET_KERNEL_SOURCE) && pwd -P)/= \
+    KBUILD_BUILD_USER=crux KBUILD_BUILD_HOST=build
 # TWRP-specific kernel options (console/pstore/...) can be added with a fragment
 # placed in kernel/xiaomi/crux/arch/arm64/configs/ and selected here:
 # TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig

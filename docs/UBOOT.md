@@ -56,7 +56,8 @@ update.
 - ramdisk: `ramdisk-recovery.img` (gzip) with `compression = "none"` — the
   kernel unpacks the initramfs itself (`CONFIG_RD_GZIP=y`);
 - fdt: `device/xiaomi/crux/prebuilt/live-dt/twrp-live.dtb`, the captured ABL live DT with the
-  UFS ICE resource and unused USB1 extcon compatibility corrections.
+  UFS ICE resource and unused USB1 extcon compatibility corrections and without
+  the captured phone's identity bootargs.
 
 The script prints the exact replacement for `boot_twrp`, recomputed for the
 new FIT size, plus SHA-256 and block count. Since 2026-10-04 the replacement
@@ -83,20 +84,23 @@ When the image is ready for hardware, hand over:
 2. the generated `boot_twrp=...` line (the block count changes).
 
 The U-Boot integration work then updates the environment and, when explicitly
-authorized, writes the cache slot.
+authorized, writes the cache slot. The FIT carries no device identity, and
+the Boot U-Boot `boot_twrp` entry passes the DT bootargs unchanged, so a cache
+deployment first needs `boot_twrp` to run `crux_install bootargs` the way the
+Recovery-container `fastboot boot` path does.
 
 ## Live device tree
 
 `prebuilt/live-dt/twrp-live.dtb` was captured from the ABL/U-Boot live DT used
 by the proven TWRP 3.3.1 boot (original SHA-256
 `9744b16db18c12e8b084c5a30c3c70e94263c7ddbd20613736b9a299c442f03d`).
-The corrected prebuilt is `1442852931cbf49829ffcbe8f1b51661ebbf9321828bf0d58b6abd66fc2b6633`;
-see [prebuilt provenance](../device/xiaomi/crux/prebuilt/README.md). It
-contains the stock `/chosen/bootargs` (including
+The corrected prebuilt is `1d2e75468c5bc38ee2fef426566b6cfde07a604086a47909f9d15ebbc98db843`;
+see [prebuilt provenance](../device/xiaomi/crux/prebuilt/README.md). Its
+`/chosen/bootargs` carry no ABL identity (the Recovery-container U-Boot
+appends the phone's values at boot) and keep the stock boot arguments (including
 `androidboot.selinux=permissive`, `buildvariant=eng`,
-`androidboot.boot_devices=soc/1d84000.ufshc`, the panel command
-`msm_drm.dsi_display0=dsi_samsung_fhd_ea8076_f1s_cmd_display:` and the
-`ramoops_memreserve` reservation).
+`androidboot.boot_devices=soc/1d84000.ufshc`, and the `ramoops_memreserve` reservation; the panel selection
+`msm_drm.dsi_display0` comes from ABL with the identity).
 
 It preserves the panel/touch/keymaster hardware descriptions from ABL's overlay.
 Node presence does not establish complete touch or decryption support; use

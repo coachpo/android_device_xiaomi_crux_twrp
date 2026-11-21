@@ -15,15 +15,13 @@ import subprocess
 import sys
 import tempfile
 
+from crux_identity import HOST_TEXT, IDENTITY_KEYS
 from ram_ui_archive import (
     FLAGS, FSTAB, QCOM_RC, RAM_FLAGS, RAM_FSTAB, SINK, TWRP_FOLDER, TWRP_MARKER,
     ram_ui_entries, read_newc, require, write_newc,
 )
 
 
-IDENTITY_KEYS = frozenset("""androidboot.serialno androidboot.cpuid androidboot.oled_wp
-    androidboot.hwversion androidboot.hwlevel androidboot.hwc androidboot.ufsid androidboot.dp
-    androidboot.baseband msm_drm.dsi_display0""".split())
 UNIQUE_KEYS = ("androidboot.serialno", "androidboot.cpuid", "androidboot.oled_wp", "androidboot.ufsid")
 STORAGE_NODES = ("/soc/ufshc@1d84000", "/soc/sdhci@8804000")
 USB_NODE = "/soc/ssusb@a600000/dwc3@a600000"
@@ -178,8 +176,10 @@ def validate_ramdisk(entries, original):
 
 
 def privacy_check(payloads, private):
-    forbidden = {**private, "Linux home": b"/home/", "macOS home": b"/Users/",
-                 "Mac VM share": b"/mnt/mac/", "build user": (getpass.getuser() + "@").encode()}
+    user = getpass.getuser()
+    forbidden = {**private, **{text.decode(): text for text in HOST_TEXT},
+                 "build user": f"{user}@".encode(), "build.prop user": f"ro.build.user={user}".encode(),
+                 "build number user": f"eng.{user}.".encode()}
     return {name: {key: data.count(needle) for key, needle in forbidden.items()}
             for name, data in payloads.items()}
 

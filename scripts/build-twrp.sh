@@ -62,6 +62,8 @@ fi
 export ALLOW_MISSING_DEPENDENCIES=true
 export LC_ALL=C
 export TW_DEFAULT_LANGUAGE=zh_CN
+# Neutral build user and host for ro.build.*, the build number and the fingerprint.
+export BUILD_USERNAME=crux BUILD_HOSTNAME=build
 
 # shellcheck disable=SC1091
 set +u

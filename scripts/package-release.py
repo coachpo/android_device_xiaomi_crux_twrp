@@ -13,6 +13,8 @@ import subprocess
 import sys
 import tempfile
 
+from crux_identity import BUILD_HOST, BUILD_USER, HOST_TEXT, identity_keys
+
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = "3.7.1_12"
 
@@ -68,6 +70,19 @@ def package(args):
     assert b"3.7.1_12-crux-twrp-12.1-coachpo" in cpio_file(archive, b"system/bin/recovery"), "Maintainer version suffix missing from built recovery"
     bootargs = run(["fdtget", "-t", "s", str(dt), "/chosen", "bootargs"])
     assert not any(value in bootargs for value in ["maxcpus=", "initcall_blacklist=", "watchdog_v2.enable=0"]), "Diagnostic bootargs in release DT"
+    assert not identity_keys(bootargs), "Release DT carries ABL device identity"
+    kernel = image.read_bytes()
+    recovery = (product / "recovery.img").read_bytes()
+    for name, data in [("kernel", kernel), ("ramdisk", archive), ("recovery.img", recovery)]:
+        assert not any(text in data for text in HOST_TEXT), f"Build host path in {name}"
+    assert re.search(rb"Linux version \S+ \(" + f"{BUILD_USER}@{BUILD_HOST}".encode() + rb"\)", kernel), \
+        "Kernel banner lacks the neutral build user"
+    for key, value in [(b"ro.build.user", BUILD_USER), (b"ro.build.host", BUILD_HOST)]:
+        found = set(re.findall(re.escape(key) + rb"=(\S*)", archive))
+        assert found == {value.encode()}, f"Recovery {key.decode()} is {found}, not {value}"
+    # Incremental builds keep partition props from an earlier build number; reject them too.
+    users = set(re.findall(rb"\.build\.version\.incremental=eng\.([^.\s]+)\.", archive))
+    assert users == {BUILD_USER.encode()}, f"Recovery build numbers name build users {users}"
     assert run(["fdtget", "-t", "x", str(dt), "/soc/ufshc@1d84000", "reg"]) == "1d84000 2500 1d90000 8000"
     assert run(["fdtget", "-t", "s", str(dt), "/soc/ufshc@1d84000", "reg-names"]) == "ufs_mem ufs_ice"
     assert run(["fdtget", "-t", "s", str(dt), "/vendor/extcon_usb1", "status"]) == "disabled"
@@ -93,7 +108,7 @@ def package(args):
     manifest = run(["repo", "manifest", "-r"], cwd=tree)
     (out / "source-manifest.xml").write_text(manifest + "\n")
     clang = tree / "prebuilts/clang/host/linux-x86/clang-prelude"
-    compiler = run([str(clang / "bin/clang"), "--version"])
+    compiler = run([str(clang / "bin/clang"), "--version"]).splitlines()[0]
     assert "16.0.2" in compiler, "Expected the verified Prelude Clang 16.0.2"
     kernel_commit = revision(tree / "kernel/xiaomi/crux")
     assert kernel_commit == run([sys.executable, str(ROOT / "scripts/kernel-pin.py")]).strip(), \
@@ -127,7 +142,7 @@ def package(args):
 Crux port maintained by [coachpo](https://github.com/coachpo). [Source repository](https://github.com/coachpo/android_device_xiaomi_crux_twrp).
 The recovery version suffix includes `coachpo`; full credits and source URLs are embedded at `/system/etc/crux-release.txt` and attached as `CREDITS.txt`. TWRP upstream credit remains with TeamWin.
 
-- `twrp-crux-{VERSION}.itb`: U-Boot FIT for the TWRP slot, with the UFS ICE/USB1 DT compatibility corrections and 80px top display inset.
+- `twrp-crux-{VERSION}.itb`: U-Boot FIT with the UFS ICE/USB1 DT compatibility corrections and 80px top display inset. It carries no device identity: boot it with `fastboot boot` from the Crux Recovery-container U-Boot, which appends the phone's ABL identity.
 - `twrp-crux-{VERSION}-recovery.img`: Android recovery-image build output. This project's verified boot route uses the FIT through U-Boot.
 - `ramdisk-recovery.img`: gzip recovery initramfs.
 - `BOOT-TWRP.txt`: exact menu command and read length ({blocks:#x} 4096-byte blocks), requiring the watchdog-protected `boot_go` wrapper.
