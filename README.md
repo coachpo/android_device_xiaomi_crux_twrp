@@ -17,7 +17,7 @@ workspace notes, Obsidian 《Crux 00 总览》).
 |---|---|
 | TWRP baseline | **3.7.1** on the **`twrp-12.1`** branch (version string `3.7.1_12`) |
 | Device tree path | `device/xiaomi/crux` |
-| Kernel | `coachpo/kernel_xiaomi_crux` branch `thirteen` (PE official Cepheus `f4048f154b51`, Linux **4.14.305**, plus the Crux migration). The retained Release was built at `e45a24f31ee0`. The manifest follows the branch and `scripts/build-twrp.sh` only warns when the checkout differs from its expected revision; see [KERNEL.md](docs/KERNEL.md) |
+| Kernel | `coachpo/kernel_xiaomi_crux` branch `thirteen` (PE official Cepheus `f4048f154b51`, Linux **4.14.305**, plus the Crux migration). The retained Release was built at `e45a24f31ee0`. The manifest pins one commit (`scripts/kernel-pin.py` prints it) and `scripts/build-twrp.sh` refuses another checkout or tracked changes; see [KERNEL.md](docs/KERNEL.md) |
 | Boot path | All entries go through U-Boot; TWRP is a FIT loaded from the cache partition by the U-Boot boot menu |
 | Verification scope | [STATUS.md](docs/STATUS.md) |
 

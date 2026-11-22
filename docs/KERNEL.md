@@ -37,8 +37,8 @@ It is the official PE Cepheus source
 `thirteen`, Linux 4.14.305) plus the Crux migration and early-boot memory-limit fixes. The USB1 extcon
 board correction is now committed in the maintained kernel source. The
 previously verified Image and DT-only repair are recorded in
-[`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). The retained offline bundle of the maintained `thirteen` branch is described
-in Obsidian 《Crux 内核与 TWRP》.
+[`BUILD-RESULTS-2026-10-04-DT.md`](BUILD-RESULTS-2026-10-04-DT.md). No offline bundle is kept;
+the published `thirteen` branch is the source.
 
 ## Toolchain
 
@@ -70,10 +70,9 @@ the PE13 tree
 The setup manifest now fetches this toolchain from
 `https://gitlab.com/jjpprrrr/prelude-clang.git` at
 `ac8fce34dc0f6918672100d7a6e867a66b8afa8f`, the actual local compiler revision.
-`scripts/build-twrp.sh` also applies the repository's board DT patch before
-building: it disables the unused USB1 extcon that conflicts with SMB5. The
-patch is idempotent on the local corrected tree. Its SHA-256 is included in
-release metadata; the kernel branch remains the PE migration branch.
+The board DT correction that disables the unused USB1 extcon (it conflicts
+with SMB5) is committed in the kernel source; `scripts/build-twrp.sh` applies
+no kernel patch.
 
 TWRP's `kernel.mk` still passes `CROSS_COMPILE_ARM32` (AOSP arm binutils) and
 hardcodes `HOSTCC`/`HOSTCXX` to the tree's clang 12 for host utilities; target
@@ -137,13 +136,12 @@ skip the kernel build during iteration.
 
 ## Updating the kernel
 
-1. Choose the kernel branch and expected revision deliberately. Update
-   `manifests/crux-twrp.xml`, `scripts/build-twrp.sh`'s expected SHA and the
-   README table together; the manifest tracks a branch and the warning is not
-   an enforcement check.
+1. Choose the kernel commit deliberately and update the pin in
+   `manifests/crux-twrp.xml` and the snippet above together;
+   `scripts/build-twrp.sh` refuses any other commit or a kernel tree with
+   tracked changes.
 2. If the PE13 device tree also consumes the same kernel, keep both in sync
    (PE13 selects `kernel/xiaomi/crux-pe-cepheus`).
 3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild from
    a clean kernel checkout; uncommitted defconfig or driver experiments change
-   the kernel even when HEAD matches. `origin/thirteen` is published; use the
-   retained offline `thirteen` bundle (see `Source`) when working offline.
+   the kernel even when HEAD matches.
