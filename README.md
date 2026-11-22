@@ -35,9 +35,10 @@ it does not change the U-Boot checkout, write cache or operate the device. See
 device/xiaomi/crux/          TWRP device tree (BoardConfig, product, recovery root)
   prebuilt/live-dt/          ABL live device tree packaged into the FIT
   recovery/root/             init scripts, fstab, twrp.flags, stock crypto/haptics blobs
-manifests/crux-twrp.xml      repo local manifest (device + kernel + pinned Prelude)
-scripts/setup-twrp.sh        repo init/sync a TWRP 12.1 tree and copy the device tree
-scripts/build-twrp.sh        apply kernel patches, lunch twrp_crux-eng && mka recoveryimage
+manifests/crux-twrp.xml      exact lock for every TWRP 12.1, kernel and toolchain project
+scripts/setup-twrp.sh        sync the lock and export the device leaf from this commit
+scripts/check-source-lock.py verify pinned checkouts and the device leaf without writes
+scripts/build-twrp.sh        verify source, lunch twrp_crux-eng && mka recoveryimage
 scripts/kernel-pin.py        print the kernel commit the manifest pins
 scripts/make-fit.sh          package recovery.img pieces into twrp-crux.itb
 scripts/package-release.py   verify FIT components and write release metadata
@@ -56,31 +57,31 @@ docs/RELEASE-DEPLOYMENT-2026-10-05.md retained Release deployment record
 
 ## Requirements
 
-- x86_64 Linux userspace (the workspace's build VM is `cruxbuild`). About
+- Ubuntu 22.04 x86_64 (the workspace's build VM is `cruxbuild`). About
   150 GB free is a planning estimate for the TWRP 12.1 tree plus `out/`.
 - `repo` (Android repo launcher).
-- U-Boot `mkimage` for packaging the FIT (the crux U-Boot tree's
-  `tools/mkimage`, or any U-Boot `mkimage` on `PATH`).
+- Ubuntu build/packaging dependencies from the
+  [workflow](.github/workflows/twrp-release.yml), including `u-boot-tools` and DTC.
 
 ## Quick start
 
 ```sh
-# 1. Sync a TWRP 12.1 tree (downloads the minimal TWRP manifest + crux tree + kernel)
-scripts/setup-twrp.sh "$HOME/twrp-12.1"
-
-# 2. Build TWRP (builds the kernel from source through vendor/twrp/build/tasks/kernel.mk)
-scripts/build-twrp.sh "$HOME/twrp-12.1"
-#    output: $HOME/twrp-12.1/out/target/product/crux/recovery.img
-#            $HOME/twrp-12.1/out/target/product/crux/ramdisk-recovery.img
-
-# 3. Package the U-Boot FIT (kernel compressed, live DT, recovery ramdisk)
-scripts/make-fit.sh --out-dir "$HOME/twrp-12.1/out/target/product/crux"
-#    output: out/fit-twrp/twrp-crux.itb + a new boot_twrp command line
+sudo install -d -o "$(id -u)" -g "$(id -g)" /mnt/twrp
+# If reusing this VM's existing tree, bind it to the same short path as CI:
+# sudo mount --bind "$HOME/twrp-12.1" /mnt/twrp
+# For an existing separately managed kernel and Prelude checkout only:
+# export TWRP_USE_EXISTING_CHECKOUTS=1
+scripts/setup-twrp.sh /mnt/twrp
+python3 scripts/check-source-lock.py /mnt/twrp
+scripts/build-twrp.sh /mnt/twrp
+scripts/package-release.py --tree /mnt/twrp --out /path/to/new/dist
+(cd /path/to/new/dist && sha256sum --check SHA256SUMS)
 ```
 
-For quick kernel iterations, TWRP can reuse a recorded Cepheus 4.14.305 Image.
-Use the [prebuilt-kernel workflow](docs/KERNEL.md#toolchain) and record the
-selected artifact's source and working-tree changes.
+Use the same Git commit in CI and locally. The 249 upstream pins are from
+the previously verified source export, plus the locked kernel and Prelude.
+Keep the kernel pin aligned with PE. The build takes time and build number
+from the Git commit, uses `crux@build`, and disables ccache.
 
 ### RAM-only UI candidate (host packaging)
 
@@ -116,25 +117,26 @@ These tree-integration choices are why the scripts look the way they do:
 | Issue | Handling |
 |---|---|
 | `build/envsetup.sh` aborts under `set -u` (`TOP: unbound variable`) | `build-twrp.sh` runs with `set -eo pipefail` |
-| A symlinked `device/xiaomi/crux` is not found by the AOSP product scan | `setup-twrp.sh` and `build-twrp.sh` copy the leaf directory with `rsync` |
+| A symlinked `device/xiaomi/crux` is not found by the AOSP product scan | `setup-twrp.sh` exports the committed leaf instead |
 | `TARGET_COPY_OUT_VENDOR must be set to 'vendor'` | `BoardConfig.mk` sets `TARGET_COPY_OUT_VENDOR := vendor` |
 | `$(LOCAL_PATH)` in late-expanded variables resolves to `/` | use literal `device/xiaomi/crux/...` paths |
 | AOSP binutils cannot link the AArch64 kernel | the kernel uses Prelude's LLVM tools (`LLVM=1`, `ld.lld`, `llvm-*`); see [KERNEL.md](docs/KERNEL.md#toolchain) |
 
 ## GitHub Actions builds and releases
 
-Run **Actions → TWRP Recovery for crux → Run workflow** on `main` to build
-and publish a GitHub Release. Leave `release_tag` empty for a unique tag, or
-supply a new tag. Pushing a `twrp-crux-*` tag also triggers the workflow.
-Either needs release authorization.
+Run **Actions → TWRP Recovery for crux → Run workflow** on `main`. With an
+empty `release_tag`, it uploads only the checked workflow artifact. A supplied
+tag or a `twrp-crux-*` tag push also publishes a GitHub Release. Dispatch and
+push require owner authorization.
 
 The workflow builds the PE Cepheus Crux kernel and recovery from source on
 Ubuntu 22.04, using the same pinned Prelude Clang 16.0.2 revision as the
 verified local build. It includes the corrected live DT and the optional
 80px top display inset. Release assets contain the Android recovery image,
 U-Boot FIT, gzip ramdisk, resolved source manifest, build metadata, SHA-256
-checksums and exact watchdog-protected menu command. Build logs are retained
-as workflow artifacts, and release assets receive signed GitHub build provenance.
+checksums and a watchdog-protected command for the historical cache layout
+(not the current boot or install path). Only releases receive signed GitHub
+build provenance. Raw build logs are not uploaded as artifacts.
 The TWRP version credits `coachpo`; full GitHub/source URLs are embedded in
 `/system/etc/crux-release.txt` and included in `CREDITS.txt`. See
 [`docs/CI-RELEASE.md`](docs/CI-RELEASE.md) and

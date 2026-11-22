@@ -100,7 +100,7 @@ fi
 
 case "$KERNEL_COMP" in
     gzip)
-        gzip -9 -c "$KERNEL" > "$BUILD_DIR/kernel.bin"
+        gzip -n -9 -c "$KERNEL" > "$BUILD_DIR/kernel.bin"
         ITS_COMP="gzip"
         ;;
     none)

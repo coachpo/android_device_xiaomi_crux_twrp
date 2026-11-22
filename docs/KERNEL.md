@@ -22,13 +22,13 @@ and PE build the same kernel source. `scripts/kernel-pin.py` prints it, and
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="crux-github"
-         revision="236ca517fe3112c636c55bae309ac51b6a98e9a9" upstream="thirteen"
-         clone-depth="1" />
+         revision="236ca517fe3112c636c55bae309ac51b6a98e9a9" upstream="refs/heads/thirteen"
+         groups="notdefault,crux-extra" />
 ```
 
-Bump it together with the PE lock. With `CRUX_KERNEL_SOURCE=<checkout>`,
-`scripts/setup-twrp.sh` makes `kernel/xiaomi/crux` a detached worktree of an
-existing kernel checkout instead of a second clone. The retained Release's
+Bump it together with the PE lock. If the TWRP tree already has a separate
+kernel checkout and Prelude checkout, `TWRP_USE_EXISTING_CHECKOUTS=1`
+leaves both untouched and still checks their pins. The retained Release's
 TWRP Image was built at `e45a24f31ee0`
 (`Linux version 4.14.305-Crux-PE-ge45a24f31ee0`).
 
@@ -81,12 +81,8 @@ explicitly because the Cepheus `vdso32/Makefile` only falls back to `$(LD)`
 when the make variable `LLVM` is set, and otherwise expects a host `ld` that
 the build environment does not have.
 
-Alternatively, reuse an already-built kernel image (PE13 build):
-
-```sh
-TARGET_PREBUILT_KERNEL=/path/to/accepted-kernel/Image \
-TARGET_FORCE_PREBUILT_KERNEL=1 scripts/build-twrp.sh "$HOME/twrp-12.1"
-```
+The comparable local and CI builds both build the kernel from source. Use
+the separate RAM UI recipe for kernel-only diagnostics.
 
 ## Optional TWRP kernel fragment
 
@@ -131,8 +127,7 @@ Also absent from the baseline config, and listed in the fragment table above:
 
 The Cepheus `crux_defconfig` builds **0** `.ko` modules; `kernel.mk` installs
 none into the vendor staging area. TWRP recovery does not depend on modules
-(`TW_LOAD_VENDOR_MODULES` is not used). Use the prebuilt-kernel path above to
-skip the kernel build during iteration.
+(`TW_LOAD_VENDOR_MODULES` is not used).
 
 ## Updating the kernel
 
@@ -142,6 +137,6 @@ skip the kernel build during iteration.
    tracked changes.
 2. If the PE13 device tree also consumes the same kernel, keep both in sync
    (PE13 selects `kernel/xiaomi/crux-pe-cepheus`).
-3. Re-run `scripts/setup-twrp.sh` (or `repo sync` in the tree) and rebuild from
+3. Re-run `scripts/setup-twrp.sh` and rebuild from
    a clean kernel checkout; uncommitted defconfig or driver experiments change
    the kernel even when HEAD matches.

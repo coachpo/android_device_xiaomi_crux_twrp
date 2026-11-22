@@ -58,7 +58,7 @@ QCOM_BOARD_PLATFORMS += msmnile
 # ---------------------------------------------------------------------------
 # Kernel - built from source through vendor/twrp/build/tasks/kernel.mk
 # ---------------------------------------------------------------------------
-# The kernel source is provided by the local manifest
+# The kernel source is provided by the locked manifest
 # (manifests/crux-twrp.xml -> coachpo/kernel_xiaomi_crux @ thirteen).
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_SOURCE := kernel/xiaomi/crux
@@ -68,7 +68,7 @@ TARGET_KERNEL_CLANG_COMPILE := true
 # in LLVM mode (LLVM=1 + LLVM_IAS=1), matching the PE13 build. The twrp-12.1
 # default clang-r416183b1 (12.0.7) predates the baseline, so point the kernel
 # build at a Prelude copy inside the tree
-# (prebuilts/clang/host/linux-x86/clang-prelude, symlinked to the PE13 tree).
+# (prebuilts/clang/host/linux-x86/clang-prelude, pinned in the same lock).
 TARGET_KERNEL_CLANG_VERSION := prelude
 TARGET_KERNEL_CLANG_PATH := $(shell pwd)/prebuilts/clang/host/linux-x86/clang-prelude
 TARGET_KERNEL_CLANG_BIN := $(TARGET_KERNEL_CLANG_PATH)/bin
@@ -89,7 +89,8 @@ TARGET_KERNEL_ADDITIONAL_FLAGS += \
 # shell environment, so these are make arguments.
 TARGET_KERNEL_ADDITIONAL_FLAGS += \
     KAFLAGS=-fmacro-prefix-map=$(shell cd $(TARGET_KERNEL_SOURCE) && pwd -P)/= \
-    KBUILD_BUILD_USER=crux KBUILD_BUILD_HOST=build
+    KBUILD_BUILD_USER=crux KBUILD_BUILD_HOST=build KBUILD_BUILD_VERSION=1 \
+    KBUILD_BUILD_TIMESTAMP=$(shell date -u -d "@$$(cat $(BUILD_DATETIME_FILE))" +%FT%TZ)
 # TWRP-specific kernel options (console/pstore/...) can be added with a fragment
 # placed in kernel/xiaomi/crux/arch/arm64/configs/ and selected here:
 # TARGET_KERNEL_ADDITIONAL_CONFIG := crux_twrp_defconfig
@@ -164,6 +165,8 @@ BOARD_AVB_RECOVERY_KEY_PATH := external/avb/test/data/testkey_rsa2048.pem
 BOARD_AVB_RECOVERY_ALGORITHM := SHA256_RSA2048
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX := 1
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1
+# This is a reproducible image signed with the public Android AVB test key.
+BOARD_AVB_RECOVERY_ADD_HASH_FOOTER_ARGS += --salt 0000000000000000000000000000000000000000000000000000000000000000
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
 
 # ---------------------------------------------------------------------------

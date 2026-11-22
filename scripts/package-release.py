@@ -13,7 +13,7 @@ import subprocess
 import sys
 import tempfile
 
-from crux_identity import BUILD_HOST, BUILD_USER, HOST_TEXT, identity_keys
+from crux_identity import BUILD_HOST, BUILD_USER, identity_keys, verify_public_bytes
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = "3.7.1_12"
@@ -53,7 +53,9 @@ def package(args):
     tree = args.tree.resolve()
     product = tree / "out/target/product/crux"
     out = args.out.resolve()
-    out.mkdir(parents=True, exist_ok=True)
+    run([sys.executable, str(ROOT / "scripts/check-source-lock.py"), str(tree)])
+    epoch = run(["git", "-C", str(ROOT), "log", "-1", "--format=%ct"])
+    out.mkdir(parents=True)
     image = product / "obj/KERNEL_OBJ/arch/arm64/boot/Image"
     config = product / "obj/KERNEL_OBJ/.config"
     ramdisk = product / "ramdisk-recovery.img"
@@ -72,17 +74,16 @@ def package(args):
     assert not any(value in bootargs for value in ["maxcpus=", "initcall_blacklist=", "watchdog_v2.enable=0"]), "Diagnostic bootargs in release DT"
     assert not identity_keys(bootargs), "Release DT carries ABL device identity"
     kernel = image.read_bytes()
-    recovery = (product / "recovery.img").read_bytes()
-    for name, data in [("kernel", kernel), ("ramdisk", archive), ("recovery.img", recovery)]:
-        assert not any(text in data for text in HOST_TEXT), f"Build host path in {name}"
+    for name, data in [("kernel", kernel), ("ramdisk", archive), ("DTB", dt.read_bytes())]:
+        verify_public_bytes(name, data)
     assert re.search(rb"Linux version \S+ \(" + f"{BUILD_USER}@{BUILD_HOST}".encode() + rb"\)", kernel), \
         "Kernel banner lacks the neutral build user"
     for key, value in [(b"ro.build.user", BUILD_USER), (b"ro.build.host", BUILD_HOST)]:
         found = set(re.findall(re.escape(key) + rb"=(\S*)", archive))
         assert found == {value.encode()}, f"Recovery {key.decode()} is {found}, not {value}"
     # Incremental builds keep partition props from an earlier build number; reject them too.
-    users = set(re.findall(rb"\.build\.version\.incremental=eng\.([^.\s]+)\.", archive))
-    assert users == {BUILD_USER.encode()}, f"Recovery build numbers name build users {users}"
+    numbers = set(re.findall(rb"\.build\.version\.incremental=(\S+)", archive))
+    assert numbers == {f"eng.{BUILD_USER}.{epoch}".encode()}, "Recovery contains a stale or non-neutral build number"
     assert run(["fdtget", "-t", "x", str(dt), "/soc/ufshc@1d84000", "reg"]) == "1d84000 2500 1d90000 8000"
     assert run(["fdtget", "-t", "s", str(dt), "/soc/ufshc@1d84000", "reg-names"]) == "ufs_mem ufs_ice"
     assert run(["fdtget", "-t", "s", str(dt), "/vendor/extcon_usb1", "status"]) == "disabled"
@@ -92,7 +93,9 @@ def package(args):
         stage = Path(temporary)
         fit = stage / fit_name
         output = run([str(ROOT / "scripts/make-fit.sh"), "--out-dir", str(product),
-                      "--kernel", str(image), "--dt", str(dt), "--out", str(fit)])
+                      "--kernel", str(image), "--dt", str(dt), "--out", str(fit),
+                      "--mkimage", "/usr/bin/mkimage"],
+                     env={**os.environ, "SOURCE_DATE_EPOCH": epoch, "LC_ALL": "C", "TZ": "UTC"})
         print(output)
         assert fit.stat().st_size <= 64 * 1024 * 1024, "FIT exceeds the TWRP cache slot"
         for index, source, compressed in [(0, image, True), (1, dt, False), (2, ramdisk, False)]:
@@ -105,8 +108,7 @@ def package(args):
     shutil.copy2(product / "recovery.img", out / f"twrp-crux-{VERSION}-recovery.img")
     shutil.copy2(ramdisk, out / "ramdisk-recovery.img")
     shutil.copy2(credits, out / "CREDITS.txt")
-    manifest = run(["repo", "manifest", "-r"], cwd=tree)
-    (out / "source-manifest.xml").write_text(manifest + "\n")
+    shutil.copyfile(ROOT / "manifests/crux-twrp.xml", out / "source-manifest.xml")
     clang = tree / "prebuilts/clang/host/linux-x86/clang-prelude"
     compiler = run([str(clang / "bin/clang"), "--version"]).splitlines()[0]
     assert "16.0.2" in compiler, "Expected the verified Prelude Clang 16.0.2"
@@ -123,12 +125,16 @@ def package(args):
     (out / "BOOT-TWRP.txt").write_text(boot_command + "\n")
     metadata = {
         "device": "crux", "twrp_version": VERSION, "release_tag": args.release_tag,
+        "source_date_epoch": int(epoch),
         "built_at_utc": datetime.now(timezone.utc).isoformat(),
         "device_source_commit": revision(ROOT),
         "kernel_source_commit": kernel_commit,
         "kernel_config_sha256": sha(config), "raw_image_sha256": sha(image),
         "live_dtb_sha256": sha(dt), "toolchain_commit": revision(clang),
         "compiler": compiler, "top_inset_px": 80, "fit_blocks": f"0x{blocks:x}",
+        "mkimage": run(["/usr/bin/mkimage", "-V"]),
+        "dtc": run(["/usr/bin/dtc", "--version"]),
+        "gzip": run(["/usr/bin/gzip", "--version"]).splitlines()[0],
         "maintainer": "coachpo", "maintainer_github": "https://github.com/coachpo",
         "repository": "https://github.com/coachpo/android_device_xiaomi_crux_twrp",
         "embedded_credits_sha256": sha(credits),
@@ -157,7 +163,10 @@ For workflow-produced releases, verify GitHub's signed build provenance with `gh
 """
     (out / "RELEASE-NOTES.md").write_text(notes)
     files = sorted(p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS")
+    for path in files:
+        verify_public_bytes(path.name, path.read_bytes())
     (out / "SHA256SUMS").write_text("".join(f"{sha(p)}  {p.name}\n" for p in files))
+    print(f"Public TWRP scan: {len(files)} assets plus expanded FIT inputs, 0 findings")
     print(f"Verified {len(files)} release assets in {out}")
 
 
@@ -165,5 +174,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tree", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--release-tag", required=True)
+    parser.add_argument("--release-tag", help="Release identity; omit for an artifact-only build")
     package(parser.parse_args())

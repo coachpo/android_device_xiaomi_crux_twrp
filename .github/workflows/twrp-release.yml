@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (empty generates a unique twrp-crux tag)'
+        description: 'Release tag (empty: workflow artifact only)'
         required: false
         type: string
   push:
@@ -29,18 +29,16 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
-      TWRP_TREE: /tmp/twrp
-      LOCAL_DEVICE: ${{ github.workspace }}/device/xiaomi/crux
-      TWRP_BRANCH: twrp-12.1
+      TWRP_TREE: /mnt/twrp
       TWRP_JOBS: '4'
-      USE_CCACHE: '1'
-      CCACHE_EXEC: /usr/bin/ccache
-      TZ: Asia/Shanghai
     steps:
       - name: Check out the release sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Select release tag
+        if: github.event_name == 'push' || inputs.release_tag != ''
         env:
           REQUESTED_TAG: ${{ inputs.release_tag }}
           EVENT_NAME: ${{ github.event_name }}
@@ -50,8 +48,6 @@ jobs:
           tag="$REQUESTED_TAG"
           if [ "$EVENT_NAME" = push ]; then
             tag="$REF_NAME"
-          elif [ -z "$tag" ]; then
-            tag="twrp-crux-3.7.1_12-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           fi
           git check-ref-format "refs/tags/$tag"
           existing_ref="$(git ls-remote --tags origin "refs/tags/$tag")"
@@ -68,7 +64,6 @@ jobs:
             exit 1
           fi
           echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
-          mkdir -p dist logs
 
       - name: Prepare Ubuntu build tools and disk space
         run: |
@@ -76,7 +71,7 @@ jobs:
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
             /usr/local/.ghcup /opt/hostedtoolcache /usr/local/share/boost
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex gperf \
+          sudo apt-get install -y bc bison build-essential curl flex gperf \
             git lib32ncurses-dev lib32z1-dev libelf-dev liblz4-tool libncurses5 \
             libssl-dev libxml2-utils lzop python3 rsync unzip zip \
             device-tree-compiler u-boot-tools
@@ -88,22 +83,24 @@ jobs:
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          export CCACHE_DIR="$TWRP_TREE/out/.ccache"
-          mkdir -p "$CCACHE_DIR"
-          echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-          ccache --max-size 5G
-          df -h "$GITHUB_WORKSPACE"
+          # Keep the same short logical path as the VM, but use the
+          # runner's root filesystem, not a possible /mnt resource disk.
+          backing="$(mktemp -d /var/tmp/twrp.XXXXXXXX)"
+          sudo install -d "$TWRP_TREE"
+          sudo mount --bind "$backing" "$TWRP_TREE"
+          df -h "$TWRP_TREE"
 
-      - name: Sync TWRP, PE Crux kernel and pinned Prelude Clang
-        run: scripts/setup-twrp.sh "$TWRP_TREE" 2>&1 | tee logs/sync.log
+      - name: Sync the locked TWRP source tree
+        run: scripts/setup-twrp.sh "$TWRP_TREE"
 
       - name: Build recovery from source
-        run: scripts/build-twrp.sh "$TWRP_TREE" 2>&1 | tee logs/build.log
+        run: scripts/build-twrp.sh "$TWRP_TREE"
 
       - name: Package and verify release assets
         run: |
-          scripts/package-release.py --tree "$TWRP_TREE" --out dist \
-            --release-tag "$RELEASE_TAG"
+          tag_args=()
+          if [ -n "${RELEASE_TAG:-}" ]; then tag_args=(--release-tag "$RELEASE_TAG"); fi
+          scripts/package-release.py --tree "$TWRP_TREE" --out dist "${tag_args[@]}"
           (cd dist && sha256sum --check SHA256SUMS)
 
       - name: Upload release assets as workflow artifact
@@ -115,11 +112,13 @@ jobs:
           compression-level: 0
 
       - name: Sign build provenance for release assets
+        if: github.event_name == 'push' || inputs.release_tag != ''
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: dist/*
 
       - name: Publish GitHub Release
+        if: github.event_name == 'push' || inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -129,11 +128,3 @@ jobs:
           gh release upload "$RELEASE_TAG" dist/*
           gh release edit "$RELEASE_TAG" --draft=false
           gh release view "$RELEASE_TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Preserve build logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: twrp-crux-logs-${{ github.run_id }}
-          path: logs/
-          if-no-files-found: warn

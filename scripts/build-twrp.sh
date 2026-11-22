@@ -1,96 +1,30 @@
 #!/usr/bin/env bash
-#
-# Build TWRP 3.7.1 (twrp-12.1 / 3.7.1_12) for crux.
-#
-# Copyright (C) 2026 The Crux TWRP port
-# SPDX-License-Identifier: Apache-2.0
-#
-# Usage:
-#   scripts/build-twrp.sh [TREE_DIR] [extra mka arguments...]
-#
-# Environment:
-#   TARGET_PREBUILT_KERNEL   Use this kernel image instead of building
-#                            kernel/xiaomi/crux from source (quick iteration).
-#   TARGET_FORCE_PREBUILT_KERNEL=1   Required together with
-#                            TARGET_PREBUILT_KERNEL when the kernel source is
-#                            present (see vendor/twrp/build/tasks/kernel.mk).
-#
+# Build the locked Crux TWRP recovery from source.
+# Usage: scripts/build-twrp.sh [TREE_DIR]
 set -eo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TREE="${1:-$PWD/twrp-12.1}"
-shift || true
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "${1:-/mnt/twrp}"
+python3 "$ROOT/scripts/check-source-lock.py" .
 
-if [ ! -d "$TREE" ]; then
-    echo "error: build tree '$TREE' does not exist; run scripts/setup-twrp.sh first" >&2
-    exit 1
-fi
-
-cd "$TREE"
-TREE="$PWD"
-
-if [ ! -f build/envsetup.sh ]; then
-    echo "error: '$TREE' does not look like an Android build tree" >&2
-    exit 1
-fi
-
-# Keep the device tree in sync when developing against a local checkout.
-# A symlink is not enough: the AOSP product scan does not follow symlinked
-# device directories.
-if [ -n "${LOCAL_DEVICE:-}" ]; then
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete "$LOCAL_DEVICE/" "$TREE/device/xiaomi/crux/"
-    else
-        rm -rf "$TREE/device/xiaomi/crux"
-        cp -a "$LOCAL_DEVICE" "$TREE/device/xiaomi/crux"
-    fi
-fi
-
-KERNEL_PIN="$(python3 "$REPO_ROOT/scripts/kernel-pin.py")"
-if [ -z "${TARGET_PREBUILT_KERNEL:-}" ]; then
-    ACTUAL_KERNEL_SHA="$(git -C kernel/xiaomi/crux rev-parse HEAD 2>/dev/null || true)"
-    if [ "$ACTUAL_KERNEL_SHA" != "$KERNEL_PIN" ]; then
-        echo "error: kernel/xiaomi/crux is at ${ACTUAL_KERNEL_SHA:-no checkout}, manifest pins $KERNEL_PIN" >&2
-        exit 1
-    fi
-    if [ -n "$(git -C kernel/xiaomi/crux status --porcelain --untracked-files=no)" ]; then
-        echo "error: kernel/xiaomi/crux has tracked changes" >&2
-        exit 1
-    fi
-fi
-
-export ALLOW_MISSING_DEPENDENCIES=true
-export LC_ALL=C
-export TW_DEFAULT_LANGUAGE=zh_CN
-# Neutral build user and host for ro.build.*, the build number and the fingerprint.
+export LC_ALL=C TZ=UTC
+export SOURCE_DATE_EPOCH="$(git -C "$ROOT" log -1 --format=%ct)"
+export BUILD_DATETIME="$SOURCE_DATE_EPOCH" BUILD_NUMBER="eng.crux.$SOURCE_DATE_EPOCH"
 export BUILD_USERNAME=crux BUILD_HOSTNAME=build
+export OUT_DIR=out USE_CCACHE=false CCACHE_DISABLE=1
+export ALLOW_MISSING_DEPENDENCIES=true
+unset TARGET_PREBUILT_KERNEL TARGET_FORCE_PREBUILT_KERNEL
+
+stamp="$OUT_DIR/crux-build-number"
+mkdir -p "$OUT_DIR"
+if [[ ! -f $stamp || $(<"$stamp") != "$BUILD_NUMBER" ]]; then
+    printf '%s\n' "$BUILD_NUMBER" > "$stamp"
+fi
 
 # shellcheck disable=SC1091
-set +u
 source build/envsetup.sh
 set -e
-
-echo "==> lunch twrp_crux-eng"
 lunch twrp_crux-eng
+mka recoveryimage -j"${TWRP_BUILD_JOBS:-$(nproc)}"
 
-if [ -n "${TARGET_PREBUILT_KERNEL:-}" ]; then
-    echo "==> using prebuilt kernel: $TARGET_PREBUILT_KERNEL"
-    echo "    (set TARGET_FORCE_PREBUILT_KERNEL=1 to silence the build warning)"
-fi
-
-if command -v nproc >/dev/null 2>&1; then
-    JOBS="$(nproc)"
-else
-    JOBS="$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
-fi
-
-echo "==> mka recoveryimage -j$JOBS $*"
-mka recoveryimage -j"$JOBS" "$@"
-
-OUT="out/target/product/crux"
-echo
-echo "==> build outputs"
-ls -l "$OUT/recovery.img" "$OUT/ramdisk-recovery.img" 2>/dev/null || true
-ls -l "$OUT/kernel" 2>/dev/null || true
-echo
-echo "Next: scripts/make-fit.sh --out-dir $TREE/$OUT"
+ls -l out/target/product/crux/{recovery.img,ramdisk-recovery.img}

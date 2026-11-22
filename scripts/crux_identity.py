@@ -6,6 +6,7 @@ bootargs keys from a booted FIT and appends the receiving phone's ABL values,
 so the packaged DT carries none of them. Usage: crux_identity.py check DTB...
 """
 
+import re
 import subprocess
 import sys
 
@@ -14,6 +15,17 @@ IDENTITY_KEYS = frozenset("""androidboot.serialno androidboot.cpuid androidboot.
     androidboot.baseband msm_drm.dsi_display0""".split())
 HOST_TEXT = (b"/home/", b"/Users/", b"/mnt/mac/")
 BUILD_USER, BUILD_HOST = "crux", "build"
+IDENTITY_ASSIGNMENT = re.compile(
+    rb"(?:" + b"|".join(re.escape(key.encode()) for key in sorted(IDENTITY_KEYS)) +
+    rb")=[^\s\x00]")
+LOCAL_EMAIL = re.compile(rb"[\w.+-]+@[\w.-]+\.local\b", re.IGNORECASE)
+
+
+def verify_public_bytes(name, data):
+    if any(prefix in data for prefix in (*HOST_TEXT, b"/__w/", b"/github/workspace")) or LOCAL_EMAIL.search(data):
+        raise ValueError(f"Host path or local email in {name}")
+    if IDENTITY_ASSIGNMENT.search(data):
+        raise ValueError(f"ABL identity assignment in {name}")
 
 
 def identity_keys(bootargs):
