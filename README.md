@@ -69,7 +69,7 @@ docs/RELEASE-DEPLOYMENT-2026-10-05.md retained Release deployment record
 sudo install -d -o "$(id -u)" -g "$(id -g)" /mnt/twrp
 # If reusing this VM's existing tree, bind it to the same short path as CI:
 # sudo mount --bind "$HOME/twrp-12.1" /mnt/twrp
-# For an existing separately managed kernel and Prelude checkout only:
+# For an independent, tag-free kernel and a separately managed Prelude checkout:
 # export TWRP_USE_EXISTING_CHECKOUTS=1
 scripts/setup-twrp.sh /mnt/twrp
 python3 scripts/check-source-lock.py /mnt/twrp

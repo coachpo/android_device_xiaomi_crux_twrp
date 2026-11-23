@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = "manifests/crux-twrp.xml"
 DEVICE = Path("device/xiaomi/crux")
+KERNEL = "kernel/xiaomi/crux"
 
 
 def git(path, *args):
@@ -33,6 +34,12 @@ def check_project(tree, project):
             return f"{path}: HEAD {actual}, expected {pin}"
         if git(directory, "status", "--porcelain", "--untracked-files=no"):
             return f"{path}: tracked changes"
+        if path == KERNEL:
+            # An untagged HEAD is printed as its full SHA, without any suffix.
+            description = git(directory, "describe", "--tags", "--long", "--always", "--abbrev=40")
+            if description.decode().strip() != actual:
+                return (f"{path}: a reachable Git tag can change the kernel version; "
+                        "use an independent checkout synced with --no-tags, not a shared worktree")
     except subprocess.CalledProcessError:
         return f"{path}: cannot read checkout"
     for entry in project:

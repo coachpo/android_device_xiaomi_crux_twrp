@@ -26,9 +26,11 @@ and PE build the same kernel source. `scripts/kernel-pin.py` prints it, and
          groups="notdefault,crux-extra" />
 ```
 
-Bump it together with the PE lock. If the TWRP tree already has a separate
-kernel checkout and Prelude checkout, `TWRP_USE_EXISTING_CHECKOUTS=1`
-leaves both untouched and still checks their pins. The retained Release's
+Bump it together with the PE lock. `TWRP_USE_EXISTING_CHECKOUTS=1` leaves
+an independent kernel checkout and a separate Prelude checkout untouched
+and still checks their pins. Fetch the kernel with `--no-tags`: a reachable
+tag can change the kernel version, and a linked worktree shares the main
+checkout's tags. The retained Release's
 TWRP Image was built at `e45a24f31ee0`
 (`Linux version 4.14.305-Crux-PE-ge45a24f31ee0`).
 

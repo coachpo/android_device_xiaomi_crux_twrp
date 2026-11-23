@@ -2,7 +2,7 @@
 # Sync the committed TWRP lock and the device leaf from the same commit.
 # Usage: scripts/setup-twrp.sh [TREE_DIR]
 # TWRP_JOBS controls sync parallelism. TWRP_USE_EXISTING_CHECKOUTS=1 leaves
-# the separately managed kernel and Prelude checkouts untouched.
+# the independent, tag-free kernel and separately managed Prelude checkouts untouched.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

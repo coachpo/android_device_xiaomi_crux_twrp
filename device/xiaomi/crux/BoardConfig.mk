@@ -149,6 +149,14 @@ TARGET_RECOVERY_QCOM_RTC_FIX := true
 TARGET_USES_MKE2FS := true
 TW_QCOM_ATS_OFFSET := 1617714502203
 
+# TeamWin emits these lists in filesystem traversal order before this hook.
+BOARD_RECOVERY_IMAGE_PREPARE = bash -o pipefail -c ' \
+    cd "$$1" && LC_ALL=C sort -o ramdisk-files.txt ramdisk-files.txt && \
+    find . -type f ! -path "./ramdisk-files.sha256sum" \
+        ! -path "*lib/modules*" ! -path "*prop.default*" -print0 | \
+        LC_ALL=C sort -z | xargs -0 sha256sum > ramdisk-files.sha256sum \
+    ' _ "$(TARGET_RECOVERY_ROOT_OUT)"
+
 # ---------------------------------------------------------------------------
 # Spoofed platform properties used by TWRP and the AVB rollback index
 # ---------------------------------------------------------------------------
