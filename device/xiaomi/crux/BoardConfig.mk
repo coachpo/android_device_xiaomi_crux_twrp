@@ -25,6 +25,8 @@ BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 BUILD_BROKEN_MISSING_REQUIRED_MODULES := true
 BUILD_BROKEN_PREBUILT_ELF_FILES := true
+# Keep the build wrapper's TZ=UTC for the build.prop date recipes under Ninja.
+BUILD_BROKEN_NINJA_USES_ENV_VARS += TZ
 
 # ---------------------------------------------------------------------------
 # Architecture
