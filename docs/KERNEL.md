@@ -22,7 +22,7 @@ and PE build the same kernel source. `scripts/kernel-pin.py` prints it, and
 ```xml
 <project name="coachpo/kernel_xiaomi_crux" path="kernel/xiaomi/crux"
          remote="crux-github"
-         revision="7ac426128bc9ea30010fcd99f9d6e2d6a80c7259" upstream="refs/heads/thirteen"
+         revision="2900b2cc1af5517a25c71cc8851c5f893754fea3" upstream="refs/heads/thirteen"
          groups="notdefault,crux-extra" />
 ```
 
